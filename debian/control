@@ -1,0 +1,15 @@
+Source: fso-usaged
+Section: unknown
+Priority: extra
+Maintainer: Heiko Stuebner <heiko@sntech.de>
+Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.7.3), libgee-dev (>= 0.1.6), libvala-dev, libfso-glib-dev, libfsoframework-dev
+Standards-Version: 3.8.1
+
+Package: fso-usaged
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: freesmartphone.org usage daemon
+ This daemon implements the freesmartphone.org Usage API
+ .
+ This package is part of the freesmartphone.org software stack
+ and is targeted for smartphones.
