@@ -1,9 +1,13 @@
 Source: fso-usaged
-Section: unknown
+Section: misc
 Priority: extra
-Maintainer: Heiko Stuebner <heiko@sntech.de>
-Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.7.3), libgee-dev (>= 0.1.6), libvala-dev, libfso-glib-dev, libfsoframework-dev
+Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
+Uploaders: Joachim Breitner <nomeata@debian.org>, Luca Capello <luca@pca.it>, Heiko Stuebner <heiko@sntech.de>
+Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.7.3), libgee-dev (>= 0.1.5+git20090601), libvala-dev, libfso-glib-dev, libfsoframework-dev, pkg-config
 Standards-Version: 3.8.1
+Homepage: http://freesmartphone.org/
+Vcs-Git: git://git.debian.org/git/pkg-fso/fso-usaged.git
+Vcs-Browser: http://git.debian.org/?p=pkg-fso/fso-usaged.git;a=summary
 
 Package: fso-usaged
 Architecture: any
