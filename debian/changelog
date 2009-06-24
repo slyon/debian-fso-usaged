@@ -1,4 +1,4 @@
-fso-usaged (0+git20090624-1) pkg-fso; urgency=low
+fso-usaged (0+git20090623-1) pkg-fso; urgency=low
 
   * new upstream-snapshot
   * upload to pkg-fso
