@@ -1,4 +1,11 @@
-fso-usaged (0+git20090616-1) unstable; urgency=low
+fso-usaged (0+git20090624-1) pkg-fso; urgency=low
+
+  * new upstream-snapshot
+  * upload to pkg-fso
+
+ -- Heiko Stuebner <heiko@sntech.de>  Wed, 24 Jun 2009 19:30:10 +0200
+
+fso-usaged (0+git20090616-1) UNRELEASED; urgency=low
 
   * Initial release
 
