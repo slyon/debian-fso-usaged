@@ -1,3 +1,9 @@
+fso-usaged (0.9.0-1) pkg-fso; urgency=low
+
+  * new upstream-release
+
+ -- Heiko Stuebner <heiko@sntech.de>  Sat, 27 Jun 2009 16:30:10 +0200
+
 fso-usaged (0+git20090623-1) pkg-fso; urgency=low
 
   * new upstream-snapshot
