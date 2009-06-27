@@ -175,9 +175,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 GTESTER = gtester 
 GTESTER_REPORT = gtester-report
-
-# initialize variables for unconditional += appending
-EXTRA_DIST = 
+EXTRA_DIST = $(NULL)
 TEST_PROGS = 
 NULL = 
 AM_CPPFLAGS = \
