@@ -197,9 +197,11 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 GTESTER = gtester 
 GTESTER_REPORT = gtester-report
+EXTRA_DIST = \
+	$(fsousaged_VALASOURCES) \
+	$(BUILT_SOURCES) \
+	$(NULL)
 
-# initialize variables for unconditional += appending
-EXTRA_DIST = $(fsousaged_VALASOURCES) $(BUILT_SOURCES) $(NULL)
 TEST_PROGS = 
 NULL = 
 INCLUDES = \
