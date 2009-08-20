@@ -3,7 +3,7 @@ include $(top_srcdir)/Makefile.decl
 NULL =
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir) \
+	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
 	$(NULL)
@@ -26,7 +26,7 @@ lib_LTLIBRARIES = \
 	$(NULL)
 
 libfsousage_la_VALASOURCES = \
-	dummy.vala \
+	lowlevel.vala \
 	$(NULL)
 
 libfsousage_la_SOURCES = \
