@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-# GLIB - Library of useful C routines
 
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
@@ -34,10 +33,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/Makefile.decl
-bin_PROGRAMS = fsousaged$(EXEEXT)
-subdir = src/bin
+noinst_PROGRAMS =
+subdir = src/plugins/lowlevel_openmoko
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -45,16 +43,27 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
-binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(bin_PROGRAMS)
-am__objects_1 =
-am__objects_2 = main.$(OBJEXT) $(am__objects_1)
-am_fsousaged_OBJECTS = $(am__objects_2) $(am__objects_1)
-fsousaged_OBJECTS = $(am_fsousaged_OBJECTS)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+am__installdirs = "$(DESTDIR)$(modlibexecdir)"
+modlibexecLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(modlibexec_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-fsousaged_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+am__DEPENDENCIES_2 = $(top_srcdir)/src/lib/libfsousage.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+lowlevel_openmoko_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_lowlevel_openmoko_la_OBJECTS = lowlevel_openmoko_la-plugin.lo
+lowlevel_openmoko_la_OBJECTS = $(am_lowlevel_openmoko_la_OBJECTS)
+lowlevel_openmoko_la_LINK = $(LIBTOOL) --tag=CC \
+	$(lowlevel_openmoko_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(lowlevel_openmoko_la_LDFLAGS) $(LDFLAGS) -o $@
+PROGRAMS = $(noinst_PROGRAMS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -67,8 +76,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(fsousaged_SOURCES)
-DIST_SOURCES = $(fsousaged_SOURCES)
+SOURCES = $(lowlevel_openmoko_la_SOURCES)
+DIST_SOURCES = $(lowlevel_openmoko_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -196,49 +205,59 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-GTESTER = gtester 
-GTESTER_REPORT = gtester-report
-
-# initialize variables for unconditional += appending
-EXTRA_DIST = $(fsousaged_VALASOURCES) $(BUILT_SOURCES) $(NULL)
-TEST_PROGS = 
 NULL = 
-INCLUDES = \
+AM_CPPFLAGS = \
+	-I$(top_srcdir)/src/lib \
+	$(GEE_CFLAGS) \
 	$(FSO_CFLAGS) \
-	$(GLIB_CFLAGS) \
-	-include $(CONFIG_HEADER) \
+	$(DBUS_CFLAGS) \
 	$(NULL)
 
-BUILT_SOURCES = .vala.stamp
-fsousaged_VALASOURCES = \
-	main.vala \
-	$(NULL)
-
-fsousaged_SOURCES = \
-	$(fsousaged_VALASOURCES:.vala=.c) \
-	$(NULL)
-
-fsousaged_LDADD = \
+progs_ldadd = \
+	$(top_srcdir)/src/lib/libfsousage.la \
+	$(GEE_LIBS) \
 	$(FSO_LIBS) \
-	$(GLIB_LIBS) \
+	$(DBUS_LIBS) \
 	$(NULL)
 
+VALAC_ARGS = \
+	--basedir $(top_srcdir) \
+	--vapidir ./ \
+	--vapidir $(top_srcdir)/src/lib \
+	--pkg glib-2.0 \
+	--pkg gee-1.0 \
+	--pkg dbus-glib-1 \
+	--pkg fsoframework-2.0 \
+	--pkg fso-glib-1.0 \
+	--pkg fsousage-2.0
+
+
+#
+# plugin
+#
+modlibexecdir = $(libdir)/cornucopia/modules/fsousage
+modlibexec_LTLIBRARIES = lowlevel_openmoko.la
+lowlevel_openmoko_la_SOURCES = plugin.c
+lowlevel_openmoko_la_VALASOURCES = plugin.vala
+lowlevel_openmoko_la_LIBADD = $(progs_ldadd)
+lowlevel_openmoko_la_LDFLAGS = -no-undefined -module -avoid-version
+lowlevel_openmoko_la_LIBTOOLFLAGS = --tag=disable-static
 CLEANFILES = \
-	*.c \
-	*.h \
-	$(BUILT_SOURCES) \
-	$(NULL)
+    plugin.c \
+    plugin.h \
+    *.la \
+    *.lo \
+    $(NULL)
 
 MAINTAINERCLEANFILES = \
-	Makefile.in \
-	$(NULL)
+  Makefile.in \
+  $(NULL)
 
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/Makefile.decl $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -247,9 +266,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/Makefile.decl $(am__
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/bin/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/plugins/lowlevel_openmoko/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/bin/Makefile
+	  $(AUTOMAKE) --gnu  src/plugins/lowlevel_openmoko/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -267,37 +286,42 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-binPROGRAMS: $(bin_PROGRAMS)
+install-modlibexecLTLIBRARIES: $(modlibexec_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-	     || test -f $$p1 \
-	  ; then \
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
+	test -z "$(modlibexecdir)" || $(MKDIR_P) "$(DESTDIR)$(modlibexecdir)"
+	@list='$(modlibexec_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(modlibexecLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(modlibexecdir)/$$f'"; \
+	    $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(modlibexecLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(modlibexecdir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-binPROGRAMS:
+uninstall-modlibexecLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	@list='$(modlibexec_LTLIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(modlibexecdir)/$$p'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(modlibexecdir)/$$p"; \
 	done
 
-clean-binPROGRAMS:
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+clean-modlibexecLTLIBRARIES:
+	-test -z "$(modlibexec_LTLIBRARIES)" || rm -f $(modlibexec_LTLIBRARIES)
+	@list='$(modlibexec_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+lowlevel_openmoko.la: $(lowlevel_openmoko_la_OBJECTS) $(lowlevel_openmoko_la_DEPENDENCIES) 
+	$(lowlevel_openmoko_la_LINK) -rpath $(modlibexecdir) $(lowlevel_openmoko_la_OBJECTS) $(lowlevel_openmoko_la_LIBADD) $(LIBS)
+
+clean-noinstPROGRAMS:
+	@list='$(noinst_PROGRAMS)'; for p in $$list; do \
 	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-fsousaged$(EXEEXT): $(fsousaged_OBJECTS) $(fsousaged_DEPENDENCIES) 
-	@rm -f fsousaged$(EXEEXT)
-	$(LINK) $(fsousaged_OBJECTS) $(fsousaged_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -305,7 +329,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lowlevel_openmoko_la-plugin.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -327,6 +351,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+lowlevel_openmoko_la-plugin.lo: plugin.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(lowlevel_openmoko_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lowlevel_openmoko_la-plugin.lo -MD -MP -MF $(DEPDIR)/lowlevel_openmoko_la-plugin.Tpo -c -o lowlevel_openmoko_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/lowlevel_openmoko_la-plugin.Tpo $(DEPDIR)/lowlevel_openmoko_la-plugin.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin.c' object='lowlevel_openmoko_la-plugin.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(lowlevel_openmoko_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o lowlevel_openmoko_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -408,16 +439,13 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-local
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(PROGRAMS)
+check: check-am
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(modlibexecdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -442,11 +470,11 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-modlibexecLTLIBRARIES \
+	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -468,7 +496,7 @@ install-data-am:
 
 install-dvi: install-dvi-am
 
-install-exec-am: install-binPROGRAMS
+install-exec-am: install-modlibexecLTLIBRARIES
 
 install-html: install-html-am
 
@@ -500,82 +528,27 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-modlibexecLTLIBRARIES
 
 .MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am check-local clean \
-	clean-binPROGRAMS clean-generic clean-libtool ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-libtool clean-modlibexecLTLIBRARIES clean-noinstPROGRAMS \
+	ctags distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS
+	install-info-am install-man install-modlibexecLTLIBRARIES \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+	uninstall-modlibexecLTLIBRARIES
 
-
-### testing rules
-
-# test: run all tests in cwd and subdirs
-test:	${TEST_PROGS}
-	@test -z "${TEST_PROGS}" || ${GTESTER} --verbose ${TEST_PROGS}
-	@ for subdir in $(SUBDIRS) . ; do \
-	    test "$$subdir" = "." -o "$$subdir" = "po" || \
-	    ( cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $@ ) || exit $? ; \
-	  done
-# test-report: run tests in subdirs and generate report
-# perf-report: run tests in subdirs with -m perf and generate report
-# full-report: like test-report: with -m perf and -m slow
-test-report perf-report full-report:	${TEST_PROGS}
-	@test -z "${TEST_PROGS}" || { \
-	  case $@ in \
-	  test-report) test_options="-k";; \
-	  perf-report) test_options="-k -m=perf";; \
-	  full-report) test_options="-k -m=perf -m=slow";; \
-	  esac ; \
-	  if test -z "$$GTESTER_LOGDIR" ; then	\
-	    ${GTESTER} --verbose $$test_options -o test-report.xml ${TEST_PROGS} ; \
-	  elif test -n "${TEST_PROGS}" ; then \
-	    ${GTESTER} --verbose $$test_options -o `mktemp "$$GTESTER_LOGDIR/log-XXXXXX"` ${TEST_PROGS} ; \
-	  fi ; \
-	}
-	@ ignore_logdir=true ; \
-	  if test -z "$$GTESTER_LOGDIR" ; then \
-	    GTESTER_LOGDIR=`mktemp -d "\`pwd\`/.testlogs-XXXXXX"`; export GTESTER_LOGDIR ; \
-	    ignore_logdir=false ; \
-	  fi ; \
-	  for subdir in $(SUBDIRS) . ; do \
-	    test "$$subdir" = "." -o "$$subdir" = "po" || \
-	    ( cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $@ ) || exit $? ; \
-	  done ; \
-	  $$ignore_logdir || { \
-	    echo '<?xml version="1.0"?>' > $@.xml ; \
-	    echo '<report-collection>'  >> $@.xml ; \
-	    for lf in `ls -L "$$GTESTER_LOGDIR"/.` ; do \
-	      sed '1,1s/^<?xml\b[^>?]*?>//' <"$$GTESTER_LOGDIR"/"$$lf" >> $@.xml ; \
-	    done ; \
-	    echo >> $@.xml ; \
-	    echo '</report-collection>' >> $@.xml ; \
-	    rm -rf "$$GTESTER_LOGDIR"/ ; \
-	    ${GTESTER_REPORT} --version 2>/dev/null 1>&2 ; test "$$?" != 0 || ${GTESTER_REPORT} $@.xml >$@.html ; \
-	  }
-.PHONY: test test-report perf-report full-report
-# run make test as part of make check
-check-local: test
-
-$(BUILT_SOURCES): $(fsousaged_VALASOURCES)
-	$(VALAC) -C --vapidir vapi \
-				--pkg posix \
-				--pkg gio-2.0 \
-				--pkg dbus-glib-1 \
-				--pkg fsoframework-2.0 \
-				--save-temps \
-				--basedir $(top_srcdir) $^
+$(lowlevel_openmoko_la_SOURCES): $(lowlevel_openmoko_la_VALASOURCES)
+	$(VALAC) -C $(VALAC_ARGS) $^
 	touch $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

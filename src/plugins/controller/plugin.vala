@@ -23,13 +23,13 @@
 using GLib;
 using Gee;
 
-internal const string DBUS_BUS_NAME = "org.freedesktop.DBus";
-internal const string DBUS_BUS_PATH = "/org/freedesktop/DBus";
-internal const string DBUS_BUS_INTERFACE = "org.freedesktop.DBus";
-
 internal const string RESOURCE_INTERFACE = "org.freesmartphone.Resource";
-
 internal const string CONFIG_SECTION = "fsousage";
+internal const string DEFAULT_LOWLEVEL_MODULE = "kernel26";
+
+internal const string FSO_IDLENOTIFIER_BUS   = "org.freesmartphone.odeviced";
+internal const string FSO_IDLENOTIFIER_PATH  = "/org/freesmartphone/Device/IdleNotifier/0";
+internal const string FSO_IDLENOTIFIER_IFACE = "org.freesmartphone.Device.IdleNotifier";
 
 namespace Usage
 {
@@ -257,10 +257,13 @@ public class Controller : FsoFramework.AbstractObject
 {
     private FsoFramework.Subsystem subsystem;
     private HashMap<string,Resource> resources;
-    private string sys_power_state;
+
+    private FsoUsage.LowLevel lowlevel;
     private bool do_not_suspend;
 
     dynamic DBus.Object dbus;
+
+    dynamic DBus.Object idlenotifier;
 
     public Controller( FsoFramework.Subsystem subsystem )
     {
@@ -272,20 +275,59 @@ public class Controller : FsoFramework.AbstractObject
         this.subsystem.registerServiceObject( FsoFramework.Usage.ServiceDBusName,
                                               FsoFramework.Usage.ServicePathPrefix, this );
 
-        // grab sysfs paths
-        var sysfs_root = config.stringValue( "cornucopia", "sysfs_root", "/sys" );
-        sys_power_state = Path.build_filename( sysfs_root, "power", "state" );
+        // should we really suspend?
         do_not_suspend = config.boolValue( CONFIG_SECTION, "do_not_suspend", false );
 
         // start listening for name owner changes
         dbusconn = ( (FsoFramework.DBusSubsystem)subsystem ).dbusConnection();
-        dbus = dbusconn.get_object( DBUS_BUS_NAME, DBUS_BUS_PATH, DBUS_BUS_INTERFACE );
+        dbus = dbusconn.get_object( DBus.DBUS_SERVICE_DBUS, DBus.DBUS_PATH_DBUS, DBus.DBUS_INTERFACE_DBUS );
         dbus.NameOwnerChanged += onNameOwnerChanged;
+
+        // get handle to IdleNotifier
+        idlenotifier = dbusconn.get_object( FSO_IDLENOTIFIER_BUS, FSO_IDLENOTIFIER_PATH, FSO_IDLENOTIFIER_IFACE );
+
+        // delayed init
+        Idle.add( onIdleForInit );
     }
 
     public override string repr()
     {
         return "<%s>".printf( FsoFramework.Usage.ServicePathPrefix );
+    }
+
+    private bool onIdleForInit()
+    {
+        // check preferred low level suspend/resume plugin and instanciate
+        var lowleveltype = config.stringValue( CONFIG_SECTION, "lowlevel_type", DEFAULT_LOWLEVEL_MODULE );
+        string typename = "none";
+
+        switch ( lowleveltype )
+        {
+            case "kernel26":
+                typename = "LowLevelKernel26";
+                break;
+            case "openmoko":
+                typename = "LowLevelOpenmoko";
+                break;
+            default:
+                warning( "Invalid lowlevel_type '%s'; suspend/resume will NOT be available!".printf( lowleveltype ) );
+                return false; // don't call me again
+        }
+
+        if ( lowleveltype != "none" )
+        {
+            var lowlevelclass = Type.from_name( typename );
+            if ( lowlevelclass == Type.INVALID  )
+            {
+                logger.warning( "Can't find plugin for lowlevel_type = '%s'".printf( lowleveltype ) );
+                return false; // don't call me again
+            }
+
+            lowlevel = Object.new( lowlevelclass ) as FsoUsage.LowLevel;
+            logger.info( "Ready. Using lowlevel plugin '%s' to handle suspend/resume".printf( lowleveltype ) );
+        }
+
+        return false; // don't call me again
     }
 
     private void onResourceAppearing( Resource r )
@@ -361,12 +403,24 @@ public class Controller : FsoFramework.AbstractObject
         suspendAllResources();
         logger.debug( ">>>>>>> KERNEL SUSPEND" );
         if ( !do_not_suspend )
-            FsoFramework.FileHandling.write( "mem\n", sys_power_state );
+            lowlevel.suspend();
         else
             Posix.sleep( 5 );
         logger.debug( "<<<<<<< KERNEL RESUME" );
+        var reason = lowlevel.resume().down();
+        logger.info( "Resume reason seems to be '%s'".printf( reason) );
         resumeAllResources();
         this.system_action( FreeSmartphone.UsageSystemAction.RESUME ); // DBUS SIGNAL
+
+        var idlestate = ( "key" in reason ) ? "idle" : "busy";
+        try
+        {
+            idlenotifier.SetState( idlestate );
+        }
+        catch ( DBus.Error e )
+        {
+            logger.error( "DBus Error while talking to IdleNotifier: %s".printf( e.message ) );
+        }
         return false; // MainLoop: Don't call again
     }
 
