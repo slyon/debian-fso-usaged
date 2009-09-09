@@ -1,9 +1,3 @@
-fso-usaged (0.9.0+git20090818-3) unstable; urgency=low
-
-  * don't create shlibs-file
-
- -- Heiko Stuebner <heiko@sntech.de>  Mon, 07 Sep 2009 21:56:10 +0200
-
 fso-usaged (0.9.0+git20090818-2) unstable; urgency=low
 
   * fix lintian warnings
