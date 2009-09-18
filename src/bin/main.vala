@@ -20,11 +20,13 @@
 GLib.MainLoop mainloop;
 
 FsoFramework.Logger logger;
+FsoFramework.Subsystem subsystem;
 
 public static void sighandler( int signum )
 {
     Posix.signal( signum, null ); // restore original sighandler
-    logger.info( "received signal -%d, exiting.".printf( signum ) );
+    logger.info( "received signal -%d, shutting down...".printf( signum ) );
+    subsystem.shutdown();
     mainloop.quit();
 }
 
@@ -33,26 +35,28 @@ public static int main( string[] args )
     var bin = FsoFramework.Utility.programName();
     logger = FsoFramework.createLogger( bin, bin );
     logger.info( "%s starting up...".printf( bin ) );
-    var subsystem = new FsoFramework.DBusSubsystem( "fsousage" );
+    subsystem = new FsoFramework.DBusSubsystem( "fsousage" );
     subsystem.registerPlugins();
     uint count = subsystem.loadPlugins();
     logger.info( "loaded %u plugins".printf( count ) );
-    mainloop = new GLib.MainLoop( null, false );
-    logger.info( "%s => mainloop".printf( bin ) );
-    Posix.signal( Posix.SIGINT, sighandler );
-    Posix.signal( Posix.SIGTERM, sighandler );
-    // enable for release version?
-    //Posix.signal( Posix.SIGBUS, sighandler );
-    //Posix.signal( Posix.SIGSEGV, sighandler );
+    if ( count > 0 )
+    {
+        mainloop = new GLib.MainLoop( null, false );
+        logger.info( "%s => mainloop".printf( bin ) );
+        Posix.signal( Posix.SIGINT, sighandler );
+        Posix.signal( Posix.SIGTERM, sighandler );
+        Posix.signal( Posix.SIGBUS, sighandler );
+        Posix.signal( Posix.SIGSEGV, sighandler );
 
-    /*
-    var ok = FsoFramework.UserGroupHandling.switchToUserAndGroup( "nobody", "nogroup" );
-    if ( !ok )
-        logger.warning( "Unable to drop privileges." );
-    */
+        /*
+        var ok = FsoFramework.UserGroupHandling.switchToUserAndGroup( "nobody", "nogroup" );
+        if ( !ok )
+            logger.warning( "Unable to drop privileges." );
+        */
 
-    mainloop.run();
-    logger.info( "mainloop => %s".printf( bin ) );
-    logger.info( "%s shutdown.".printf( bin ) );
+        mainloop.run();
+        logger.info( "mainloop => %s".printf( bin ) );
+    }
+    logger.info( "%s exit".printf( bin ) );
     return 0;
 }
