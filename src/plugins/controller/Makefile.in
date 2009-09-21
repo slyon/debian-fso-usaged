@@ -55,7 +55,8 @@ LTLIBRARIES = $(modlibexec_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(top_srcdir)/src/lib/libfsousage.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 controller_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_controller_la_OBJECTS = controller_la-plugin.lo
 controller_la_OBJECTS = $(am_controller_la_OBJECTS)
@@ -142,6 +143,8 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERSISTENCE_CFLAGS = @PERSISTENCE_CFLAGS@
+PERSISTENCE_LIBS = @PERSISTENCE_LIBS@
 PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 SED = @SED@
@@ -207,16 +210,18 @@ top_srcdir = @top_srcdir@
 NULL = 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/lib \
-	$(GEE_CFLAGS) \
-	$(FSO_CFLAGS) \
 	$(DBUS_CFLAGS) \
+	$(GEE_CFLAGS) \
+	$(PERSISTENCE_CFLAGS) \
+	$(FSO_CFLAGS) \
 	$(NULL)
 
 progs_ldadd = \
 	$(top_srcdir)/src/lib/libfsousage.la \
-	$(GEE_LIBS) \
-	$(FSO_LIBS) \
 	$(DBUS_LIBS) \
+	$(GEE_LIBS) \
+	$(PERSISTENCE_LIBS) \
+	$(FSO_LIBS) \
 	$(NULL)
 
 VALAC_ARGS = \
@@ -546,8 +551,10 @@ uninstall-am: uninstall-modlibexecLTLIBRARIES
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-modlibexecLTLIBRARIES
 
+
+@PERSISTENCE_TRUE@	VALAC_EXTRA_ARGS = -DPERSISTENCE --pkg persistence-1.0
 $(controller_la_SOURCES): $(controller_la_VALASOURCES)
-	$(VALAC) -C $(VALAC_ARGS) $^
+	$(VALAC) -C $(VALAC_ARGS) $(VALAC_EXTRA_ARGS) $^
 	touch $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
