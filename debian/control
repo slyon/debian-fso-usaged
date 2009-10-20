@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
 Uploaders: Heiko Stuebner <heiko@sntech.de>
 DM-Upload-Allowed: yes
-Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.7.7), libgee-dev (>= 0.3.0), libvala-dev, libfso-glib-dev (>= 0.2.1), libfsoframework-dev (>= 0.2.3), pkg-config
+Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.7.7), libgee-dev (>= 0.3.0), libvala-dev, libfso-glib-dev (>= 0.2.1-2), libfsoframework-dev (>= 0.2.3), pkg-config
 Standards-Version: 3.8.3
 Homepage: http://freesmartphone.org/
 Vcs-Git: git://git.debian.org/git/pkg-fso/fso-usaged.git
