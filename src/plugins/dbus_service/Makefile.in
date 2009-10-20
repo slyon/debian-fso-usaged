@@ -34,7 +34,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS =
-subdir = src/plugins/controller
+subdir = src/plugins/dbus_service
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -57,12 +57,14 @@ am__DEPENDENCIES_2 = $(top_srcdir)/src/lib/libfsousage.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-controller_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_controller_la_OBJECTS = controller_la-plugin.lo
-controller_la_OBJECTS = $(am_controller_la_OBJECTS)
-controller_la_LINK = $(LIBTOOL) --tag=CC $(controller_la_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(controller_la_LDFLAGS) $(LDFLAGS) -o $@
+dbus_service_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_dbus_service_la_OBJECTS = dbus_service_la-resource.lo \
+	dbus_service_la-plugin.lo
+dbus_service_la_OBJECTS = $(am_dbus_service_la_OBJECTS)
+dbus_service_la_LINK = $(LIBTOOL) --tag=CC \
+	$(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(dbus_service_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 PROGRAMS = $(noinst_PROGRAMS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -76,8 +78,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(controller_la_SOURCES)
-DIST_SOURCES = $(controller_la_SOURCES)
+SOURCES = $(dbus_service_la_SOURCES)
+DIST_SOURCES = $(dbus_service_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -240,12 +242,12 @@ VALAC_ARGS = \
 # plugin
 #
 modlibexecdir = $(libdir)/cornucopia/modules/fsousage
-modlibexec_LTLIBRARIES = controller.la
-controller_la_SOURCES = plugin.c
-controller_la_VALASOURCES = plugin.vala
-controller_la_LIBADD = $(progs_ldadd)
-controller_la_LDFLAGS = -no-undefined -module -avoid-version
-controller_la_LIBTOOLFLAGS = --tag=disable-static
+modlibexec_LTLIBRARIES = dbus_service.la
+dbus_service_la_SOURCES = resource.c plugin.c
+dbus_service_la_VALASOURCES = resource.vala plugin.vala
+dbus_service_la_LIBADD = $(progs_ldadd)
+dbus_service_la_LDFLAGS = -no-undefined -module -avoid-version
+dbus_service_la_LIBTOOLFLAGS = --tag=disable-static
 CLEANFILES = \
     plugin.c \
     plugin.h \
@@ -270,9 +272,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/plugins/controller/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/plugins/dbus_service/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/plugins/controller/Makefile
+	  $(AUTOMAKE) --gnu  src/plugins/dbus_service/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -317,8 +319,8 @@ clean-modlibexecLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-controller.la: $(controller_la_OBJECTS) $(controller_la_DEPENDENCIES) 
-	$(controller_la_LINK) -rpath $(modlibexecdir) $(controller_la_OBJECTS) $(controller_la_LIBADD) $(LIBS)
+dbus_service.la: $(dbus_service_la_OBJECTS) $(dbus_service_la_DEPENDENCIES) 
+	$(dbus_service_la_LINK) -rpath $(modlibexecdir) $(dbus_service_la_OBJECTS) $(dbus_service_la_LIBADD) $(LIBS)
 
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; for p in $$list; do \
@@ -333,7 +335,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/controller_la-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus_service_la-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus_service_la-resource.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -356,12 +359,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-controller_la-plugin.lo: plugin.c
-@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(controller_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT controller_la-plugin.lo -MD -MP -MF $(DEPDIR)/controller_la-plugin.Tpo -c -o controller_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/controller_la-plugin.Tpo $(DEPDIR)/controller_la-plugin.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin.c' object='controller_la-plugin.lo' libtool=yes @AMDEPBACKSLASH@
+dbus_service_la-resource.lo: resource.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbus_service_la-resource.lo -MD -MP -MF $(DEPDIR)/dbus_service_la-resource.Tpo -c -o dbus_service_la-resource.lo `test -f 'resource.c' || echo '$(srcdir)/'`resource.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbus_service_la-resource.Tpo $(DEPDIR)/dbus_service_la-resource.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='resource.c' object='dbus_service_la-resource.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(controller_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o controller_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbus_service_la-resource.lo `test -f 'resource.c' || echo '$(srcdir)/'`resource.c
+
+dbus_service_la-plugin.lo: plugin.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbus_service_la-plugin.lo -MD -MP -MF $(DEPDIR)/dbus_service_la-plugin.Tpo -c -o dbus_service_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbus_service_la-plugin.Tpo $(DEPDIR)/dbus_service_la-plugin.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin.c' object='dbus_service_la-plugin.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbus_service_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -553,7 +563,7 @@ uninstall-am: uninstall-modlibexecLTLIBRARIES
 
 
 @PERSISTENCE_TRUE@	VALAC_EXTRA_ARGS = -DPERSISTENCE --pkg persistence-1.0
-$(controller_la_SOURCES): $(controller_la_VALASOURCES)
+$(dbus_service_la_SOURCES): $(dbus_service_la_VALASOURCES)
 	$(VALAC) -C $(VALAC_ARGS) $(VALAC_EXTRA_ARGS) $^
 	touch $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
