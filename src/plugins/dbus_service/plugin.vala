@@ -1,5 +1,5 @@
 /*
- * Generic Resource Controller
+ * Resource Controller DBus Service
  *
  * Written by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  * All Rights Reserved
@@ -31,266 +31,7 @@ internal const string FSO_IDLENOTIFIER_BUS   = "org.freesmartphone.odeviced";
 internal const string FSO_IDLENOTIFIER_PATH  = "/org/freesmartphone/Device/IdleNotifier/0";
 internal const string FSO_IDLENOTIFIER_IFACE = "org.freesmartphone.Device.IdleNotifier";
 
-namespace Usage
-{
-/**
- * Enum for resource status
- **/
-public enum ResourceStatus
-{
-    UNKNOWN,
-    ENABLING,
-    ENABLED,
-    SUSPENDING,
-    SUSPENDED,
-    RESUMING,
-    DISABLING,
-    DISABLED
-}
-
-/**
- * Helper class encapsulating a registered resource
- **/
-public class Resource : Object
-{
-    public string name { get; set; }
-    public DBus.BusName busname { get; set; }
-    public DBus.ObjectPath objectpath { get; set; }
-    public ResourceStatus status { get; set; }
-    public FreeSmartphone.UsageResourcePolicy policy { get; set; }
-    public ArrayList<string> users { get; set; }
-
-    private FreeSmartphone.Resource proxy;
-
-    // called before deserializing, init all non-value types here
-    construct
-    {
-        this.users = new ArrayList<string>( str_equal );
-    }
-
-    public Resource( string name, DBus.BusName busname, DBus.ObjectPath objectpath )
-    {
-        this.name = name;
-        this.busname = busname;
-        this.objectpath = objectpath;
-        this.status = ResourceStatus.UNKNOWN;
-        this.policy = FreeSmartphone.UsageResourcePolicy.AUTO;
-
-        proxy = dbusconn.get_object( busname, objectpath, RESOURCE_INTERFACE ) as FreeSmartphone.Resource;
-        // workaround until vala 0.7.4
-        proxy.ref();
-
-        //message( "Resource %s served by %s @ %s created", name, busname, objectpath );
-    }
-
-    ~Resource()
-    {
-        //message( "Resource %s served by %s @ %s destroyed", name, busname, objectpath );
-    }
-
-    private void updateStatus()
-    {
-        var info = new HashTable<string,Value?>( str_hash, str_equal );
-        var p = Value( typeof(int) );
-        p.set_int( policy );
-        info.insert( "policy", p );
-        var u = Value( typeof(int) );
-        u.set_int( users.size );
-        info.insert( "refcount", u );
-        instance.resource_changed( name, isEnabled(), info ); // DBUS SIGNAL
-    }
-
-    public bool isEnabled()
-    {
-        return ( status == ResourceStatus.ENABLED );
-    }
-
-    public bool hasUser( string user )
-    {
-        return ( user in users );
-    }
-
-    public void setPolicy( FreeSmartphone.UsageResourcePolicy policy )
-    {
-        if ( policy == this.policy )
-            return;
-        else
-            ( this.policy = policy );
-
-        switch ( policy )
-        {
-            case FreeSmartphone.UsageResourcePolicy.DISABLED:
-                disable();
-                break;
-            case FreeSmartphone.UsageResourcePolicy.ENABLED:
-                enable();
-                break;
-            case FreeSmartphone.UsageResourcePolicy.AUTO:
-                if ( users.size > 0 )
-                    enable();
-                else
-                    disable();
-                break;
-            default:
-                assert_not_reached();
-        }
-
-        updateStatus();
-    }
-
-    public void addUser( string user ) throws FreeSmartphone.UsageError
-    {
-        if ( user in users )
-            throw new FreeSmartphone.UsageError.USER_EXISTS( "Resource %s already requested by user %s".printf( name, user ) );
-
-        if ( policy == FreeSmartphone.UsageResourcePolicy.DISABLED )
-            throw new FreeSmartphone.UsageError.POLICY_DISABLED( "Resource %s cannot be requested by %s per policy".printf( name, user ) );
-
-        users.insert( 0, user );
-
-        if ( policy == FreeSmartphone.UsageResourcePolicy.AUTO && users.size == 1 )
-            enable();
-
-        updateStatus();
-    }
-
-    public void delUser( string user ) throws FreeSmartphone.UsageError
-    {
-        if ( !(user in users) )
-            throw new FreeSmartphone.UsageError.USER_UNKNOWN( "Resource %s never been requested by user %s".printf( name, user ) );
-
-        users.remove( user );
-
-        if ( policy == FreeSmartphone.UsageResourcePolicy.AUTO && users.size == 0 )
-            disable();
-
-        updateStatus();
-    }
-
-    public void syncUsers()
-    {
-        dynamic DBus.Object busobj = dbusconn.get_object( DBus.DBUS_SERVICE_DBUS, DBus.DBUS_PATH_DBUS, DBus.DBUS_INTERFACE_DBUS );
-        string[] busnames = busobj.ListNames();
-
-        var usersToRemove = new ArrayList<string>();
-
-        foreach ( var userbusname in users )
-        {
-            var found = false;
-            foreach ( var busname in busnames )
-            {
-                if ( userbusname == busname )
-                    found = true;
-                    break;
-            }
-            if ( !found )
-                usersToRemove.add( userbusname );
-        }
-        foreach ( var userbusname in usersToRemove )
-        {
-            instance.logger.warning( "Resource %s user %s has vanished.".printf( name, userbusname ) );
-            delUser( userbusname );
-        }
-    }
-
-    public string[] allUsers()
-    {
-        string[] res = {};
-        foreach ( var user in users )
-            res += user;
-        return res;
-    }
-
-    public bool isPresent()
-    {
-        dynamic DBus.Object peer = dbusconn.get_object( busname, objectpath, DBus.DBUS_INTERFACE_PEER );
-        try
-        {
-            peer.Ping();
-            return true;
-        }
-        catch ( DBus.Error e )
-        {
-            instance.logger.warning( "Resource %s incommunicado: %s".printf( name, e.message ) );
-            return false;
-        }
-    }
-
-    public void enable() throws FreeSmartphone.ResourceError, DBus.Error
-    {
-        try
-        {
-            proxy.enable();
-            status = ResourceStatus.ENABLED;
-            updateStatus();
-        }
-        catch ( DBus.Error e )
-        {
-            instance.logger.error( "Resource %s can't be enabled: %s. Trying to disable instead".printf( name, e.message ) );
-            proxy.disable();
-            throw e;
-        }
-    }
-
-    public void disable() throws FreeSmartphone.ResourceError, DBus.Error
-    {
-        try
-        {
-            proxy.disable();
-            status = ResourceStatus.DISABLED;
-        }
-        catch ( DBus.Error e )
-        {
-            instance.logger.error( "Resource %s can't be disabled: %s. Setting status to UNKNOWN".printf( name, e.message ) );
-            status = ResourceStatus.UNKNOWN;
-            throw e;
-        }
-    }
-
-    public void suspend() throws FreeSmartphone.ResourceError, DBus.Error
-    {
-        if ( status == ResourceStatus.ENABLED )
-        {
-            try
-            {
-                proxy.suspend();
-                status = ResourceStatus.SUSPENDED;
-            }
-            catch ( DBus.Error e )
-            {
-                instance.logger.error( "Resource %s can't be suspended: %s. Trying to disable instead".printf( name, e.message ) );
-                proxy.disable();
-                throw e;
-            }
-        }
-        else
-        {
-            instance.logger.debug( "Resource %s not enabled: not suspending".printf( name ) );
-        }
-    }
-
-    public void resume() throws FreeSmartphone.ResourceError, DBus.Error
-    {
-        if ( status == ResourceStatus.SUSPENDED )
-        {
-            try
-            {
-                proxy.resume();
-                status = ResourceStatus.ENABLED;
-            }
-            catch ( DBus.Error e )
-            {
-                instance.logger.error( "Resource %s can't be resumed: %s. Trying to disable instead".printf( name, e.message ) );
-                proxy.disable();
-                throw e;
-            }
-        }
-        else
-        {
-            instance.logger.debug( "Resource %s not suspended: not resuming".printf( name ) );
-        }
-    }
-}
+namespace Usage {
 
 /**
  * Serialized state class
@@ -319,7 +60,10 @@ public class Controller : FsoFramework.AbstractObject
     private FsoFramework.Subsystem subsystem;
 
     private FsoUsage.LowLevel lowlevel;
-    private bool do_not_suspend;
+    private bool debug_do_not_suspend;
+    private bool debug_enable_on_startup;
+    private bool disable_on_startup;
+    private bool disable_on_shutdown;
 
     private PersistentData data;
     private weak HashMap<string,Resource> resources;
@@ -335,8 +79,14 @@ public class Controller : FsoFramework.AbstractObject
         this.subsystem.registerServiceObject( FsoFramework.Usage.ServiceDBusName,
                                               FsoFramework.Usage.ServicePathPrefix, this );
 
-        // should we really suspend?
-        do_not_suspend = config.boolValue( CONFIG_SECTION, "do_not_suspend", false );
+        // debug option: should we really suspend?
+        debug_do_not_suspend = config.boolValue( CONFIG_SECTION, "debug_do_not_suspend", false );
+        // debug option: should we enable on startup?
+        debug_enable_on_startup = config.boolValue( CONFIG_SECTION, "debug_enable_on_startup", false );
+
+        var sync_resources_with_lifecycle = config.stringValue( CONFIG_SECTION, "sync_resources_with_lifecycle", "always" );
+        disable_on_startup = ( sync_resources_with_lifecycle == "always" || sync_resources_with_lifecycle == "startup" );
+        disable_on_shutdown = ( sync_resources_with_lifecycle == "always" || sync_resources_with_lifecycle == "shutdown" );
 
         // start listening for name owner changes
         dbusconn = ( (FsoFramework.DBusSubsystem)subsystem ).dbusConnection();
@@ -362,7 +112,7 @@ public class Controller : FsoFramework.AbstractObject
         // whether any of the consumers might have disappeared meanwhile
         var resourcesToRemove = new Gee.HashSet<Resource>();
 
-        foreach ( var r in resources.get_values() )
+        foreach ( var r in resources.values )
         {
             if ( !r.isPresent() )
             {
@@ -375,7 +125,7 @@ public class Controller : FsoFramework.AbstractObject
             this.resource_available( r.name, false ); // DBUS SIGNAL
         }
 
-        foreach ( var r in resources.get_values() )
+        foreach ( var r in resources.values )
         {
             r.syncUsers();
         }
@@ -435,18 +185,37 @@ public class Controller : FsoFramework.AbstractObject
         logger.debug( "Resource %s served by %s @ %s has just been registered".printf( r.name, r.busname, r.objectpath ) );
         this.resource_available( r.name, true ); // DBUS SIGNAL
 
-        // initial status is disabled
-        try
+        if ( debug_enable_on_startup )
         {
-            r.disable();
+            try
+            {
+                r.enable();
+            }
+            catch ( FreeSmartphone.ResourceError e )
+            {
+                logger.warning( "Error while trying to (initially) enable resource %s: %s".printf( r.name, e.message ) );
+            }
+            catch ( DBus.Error e )
+            {
+                logger.warning( "Error while trying to (initially) enable resource %s: %s".printf( r.name, e.message ) );
+            }
         }
-        catch ( FreeSmartphone.ResourceError e )
+
+        if ( disable_on_startup )
         {
-            logger.warning( "Error while trying to (initially) disable resource %s: %s".printf( r.name, e.message ) );
-        }
-        catch ( DBus.Error e )
-        {
-            logger.warning( "Error while trying to (initially) disable resource %s: %s".printf( r.name, e.message ) );
+            // initial status is disabled
+            try
+            {
+                r.disable();
+            }
+            catch ( FreeSmartphone.ResourceError e )
+            {
+                logger.warning( "Error while trying to (initially) disable resource %s: %s".printf( r.name, e.message ) );
+            }
+            catch ( DBus.Error e )
+            {
+                logger.warning( "Error while trying to (initially) disable resource %s: %s".printf( r.name, e.message ) );
+            }
         }
     }
 
@@ -455,6 +224,7 @@ public class Controller : FsoFramework.AbstractObject
         logger.debug( "Resource %s served by %s @ %s has just been unregistered".printf( r.name, r.busname, r.objectpath ) );
         this.resource_available( r.name, false ); // DBUS SIGNAL
 
+#if WHY_TRYING_TO_DISABLE_A_VANISHED_RESOURCE
         try
         {
             r.disable();
@@ -467,6 +237,9 @@ public class Controller : FsoFramework.AbstractObject
         {
             logger.warning( "Error while trying to (finally) disable resource %s: %s".printf( r.name, e.message ) );
         }
+#endif
+
+        //resources.remove( r.name );
     }
 
     private void onNameOwnerChanged( dynamic DBus.Object obj, string name, string oldowner, string newowner )
@@ -482,7 +255,7 @@ public class Controller : FsoFramework.AbstractObject
 
         var resourcesToRemove = new Gee.HashSet<Resource>();
 
-        foreach ( var r in resources.get_values() )
+        foreach ( var r in resources.values )
         {
             // first, check whether the resource provider might have vanished
             if ( r.busname == name )
@@ -509,7 +282,7 @@ public class Controller : FsoFramework.AbstractObject
     {
         suspendAllResources();
         logger.debug( ">>>>>>> KERNEL SUSPEND" );
-        if ( !do_not_suspend )
+        if ( !debug_do_not_suspend )
             lowlevel.suspend();
         else
             Posix.sleep( 5 );
@@ -544,7 +317,7 @@ public class Controller : FsoFramework.AbstractObject
 
     private void disableAllResources()
     {
-        foreach ( var r in resources.get_values() )
+        foreach ( var r in resources.values )
         {
             try
             {
@@ -563,7 +336,7 @@ public class Controller : FsoFramework.AbstractObject
 
     private void suspendAllResources()
     {
-        foreach ( var r in resources.get_values() )
+        foreach ( var r in resources.values )
         {
             try
             {
@@ -582,7 +355,7 @@ public class Controller : FsoFramework.AbstractObject
 
     private void resumeAllResources()
     {
-        foreach ( var r in resources.get_values() )
+        foreach ( var r in resources.values )
         {
             try
             {
@@ -632,7 +405,7 @@ public class Controller : FsoFramework.AbstractObject
     public void register_resource( DBus.BusName sender, string name, DBus.ObjectPath path ) throws FreeSmartphone.UsageError, DBus.Error
     {
         message( "register_resource called with parameters: %s %s %s", sender, name, path );
-        if ( name in resources.get_keys() )
+        if ( name in resources.keys )
             throw new FreeSmartphone.UsageError.RESOURCE_EXISTS( "Resource %s already registered".printf( name ) );
 
         var r = new Resource( name, sender, path );
@@ -653,11 +426,20 @@ public class Controller : FsoFramework.AbstractObject
         resources.remove( name );
     }
 
+    internal void shutdownPlugin()
+    {
+        if ( disable_on_shutdown )
+        {
+            disableAllResources();
+        }
+    }
+
+
     //
     // DBUS API (for consumers)
     //
     //public FreeSmartphone.UsageResourcePolicy get_resource_policy( string name ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
-    public string get_resource_policy( string name ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
+    public async string get_resource_policy( string name ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
     {
         switch ( getResource( name ).policy )
         {
@@ -675,7 +457,7 @@ public class Controller : FsoFramework.AbstractObject
     }
 
     //public void set_resource_policy( string name, FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
-    public void set_resource_policy( string name, string policy ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
+    public async void set_resource_policy( string name, string policy ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
     {
         message( "set resource policy for %s to %s", name, policy );
 
@@ -689,49 +471,49 @@ public class Controller : FsoFramework.AbstractObject
             throw new FreeSmartphone.Error.INVALID_PARAMETER( "ResourcePolicy needs to be one of { \"enabled\", \"disabled\", \"auto\" }" );
     }
 
-    public bool get_resource_state( string name ) throws FreeSmartphone.UsageError, DBus.Error
+    public async bool get_resource_state( string name ) throws FreeSmartphone.UsageError, DBus.Error
     {
         return getResource( name ).isEnabled();
     }
 
-    public string[] get_resource_users( string name ) throws FreeSmartphone.UsageError, DBus.Error
+    public async string[] get_resource_users( string name ) throws FreeSmartphone.UsageError, DBus.Error
     {
         return getResource( name ).allUsers();
     }
 
-    public string[] list_resources() throws DBus.Error
+    public async string[] list_resources() throws DBus.Error
     {
         string[] res = {};
-        foreach ( var key in resources.get_keys() )
+        foreach ( var key in resources.keys )
             res += key;
         return res;
     }
 
-    public void request_resource( DBus.BusName sender, string name ) throws FreeSmartphone.UsageError, DBus.Error
+    public async void request_resource( DBus.BusName sender, string name ) throws FreeSmartphone.UsageError, DBus.Error
     {
         getResource( name ).addUser( sender );
     }
 
-    public void release_resource( DBus.BusName sender, string name ) throws FreeSmartphone.UsageError, DBus.Error
+    public async void release_resource( DBus.BusName sender, string name ) throws FreeSmartphone.UsageError, DBus.Error
     {
         getResource( name ).delUser( sender );
     }
 
-    public void shutdown() throws DBus.Error
+    public async void shutdown() throws DBus.Error
     {
         this.system_action( FreeSmartphone.UsageSystemAction.SHUTDOWN ); // DBUS SIGNAL
         disableAllResources();
         Posix.system( "shutdown -h now" );
     }
 
-    public void reboot() throws DBus.Error
+    public async void reboot() throws DBus.Error
     {
         this.system_action( FreeSmartphone.UsageSystemAction.REBOOT ); // DBUS SIGNAL
         disableAllResources();
         Posix.system( "reboot" );
     }
 
-    public void suspend() throws DBus.Error
+    public async void suspend() throws DBus.Error
     {
         this.system_action( FreeSmartphone.UsageSystemAction.SUSPEND ); // DBUS SIGNAL
         // we need to suspend async, otherwise the dbus call would timeout
@@ -752,7 +534,7 @@ DBus.Connection dbusconn;
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     instance = new Usage.Controller( subsystem );
-    return "fsousage.controller";
+    return "fsousage.dbus_service";
 }
 
 public static void fso_shutdown_function()
@@ -760,10 +542,11 @@ public static void fso_shutdown_function()
 #if PERSISTENCE
     instance.savePersistentData();
 #endif
+    instance.shutdownPlugin();
 }
 
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "usage controller fso_register_function()" );
+    debug( "usage dbus_service fso_register_function()" );
 }
