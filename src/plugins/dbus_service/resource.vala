@@ -1,5 +1,5 @@
-/*
- * Generic Resource Controller
+/**
+ * Resource Abstraction
  *
  * Written by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  * All Rights Reserved
@@ -110,33 +110,60 @@ public class Resource : Object
         return ( user in users );
     }
 
-    public void setPolicy( FreeSmartphone.UsageResourcePolicy policy )
+    public async void setPolicy( FreeSmartphone.UsageResourcePolicy policy )
     {
         if ( policy == this.policy )
             return;
         else
             ( this.policy = policy );
 
+        /* does not work, bug in vala async */
+#if VALA_BUG_602200_FIXED
         switch ( policy )
         {
             case FreeSmartphone.UsageResourcePolicy.DISABLED:
-                disable();
+                yield disable();
                 break;
             case FreeSmartphone.UsageResourcePolicy.ENABLED:
-                enable();
+                yield enable();
                 break;
             case FreeSmartphone.UsageResourcePolicy.AUTO:
                 if ( users.size > 0 )
-                    enable();
+                    yield enable();
                 else
-                    disable();
+                    yield disable();
                 break;
             default:
                 assert_not_reached();
         }
+#else
+        if ( policy == FreeSmartphone.UsageResourcePolicy.DISABLED )
+        {
+            yield disable();
+        }
+        else if ( policy == FreeSmartphone.UsageResourcePolicy.ENABLED )
+        {
+            yield enable();
+        }
+        else if ( policy == FreeSmartphone.UsageResourcePolicy.AUTO )
+        {
+            if ( users.size > 0 )
+            {
+                yield enable();
+            }
+            else
+            {
+                yield disable();
+            }
+        }
+        else
+        {
+            instance.logger.error( "Unknown usage resouce policy. Ignoring" );
+        }
+#endif
     }
 
-    public void addUser( string user ) throws FreeSmartphone.UsageError
+    public async void addUser( string user ) throws FreeSmartphone.UsageError
     {
         if ( user in users )
             throw new FreeSmartphone.UsageError.USER_EXISTS( "Resource %s already requested by user %s".printf( name, user ) );
@@ -147,12 +174,16 @@ public class Resource : Object
         users.insert( 0, user );
 
         if ( policy == FreeSmartphone.UsageResourcePolicy.AUTO && users.size == 1 )
-            enable();
+        {
+            yield enable();
+        }
         else
+        {
             updateStatus();
+        }
     }
 
-    public void delUser( string user ) throws FreeSmartphone.UsageError
+    public async void delUser( string user ) throws FreeSmartphone.UsageError
     {
         if ( !(user in users) )
             throw new FreeSmartphone.UsageError.USER_UNKNOWN( "Resource %s never been requested by user %s".printf( name, user ) );
@@ -160,7 +191,7 @@ public class Resource : Object
         users.remove( user );
 
         if ( policy == FreeSmartphone.UsageResourcePolicy.AUTO && users.size == 0 )
-            disable();
+            yield disable();
     }
 
     public void syncUsers()
@@ -212,27 +243,29 @@ public class Resource : Object
         }
     }
 
-    public void enable() throws FreeSmartphone.ResourceError, DBus.Error
+    public async void enable() throws FreeSmartphone.ResourceError, DBus.Error
     {
         try
         {
-            proxy.enable(updateStatus);
+            yield proxy.enable();
             status = ResourceStatus.ENABLED;
+            updateStatus();
         }
         catch ( DBus.Error e )
         {
             instance.logger.error( "Resource %s can't be enabled: %s. Trying to disable instead".printf( name, e.message ) );
-            proxy.disable();
+            yield proxy.disable();
             throw e;
         }
     }
 
-    public void disable() throws FreeSmartphone.ResourceError, DBus.Error
+    public async void disable() throws FreeSmartphone.ResourceError, DBus.Error
     {
         try
         {
-            proxy.disable(updateStatus);
+            yield proxy.disable();
             status = ResourceStatus.DISABLED;
+            updateStatus();
         }
         catch ( DBus.Error e )
         {
@@ -242,19 +275,20 @@ public class Resource : Object
         }
     }
 
-    public void suspend() throws FreeSmartphone.ResourceError, DBus.Error
+    public async void suspend() throws FreeSmartphone.ResourceError, DBus.Error
     {
         if ( status == ResourceStatus.ENABLED )
         {
             try
             {
-                proxy.suspend(updateStatus);
+                yield proxy.suspend();
                 status = ResourceStatus.SUSPENDED;
+                updateStatus();
             }
             catch ( DBus.Error e )
             {
                 instance.logger.error( "Resource %s can't be suspended: %s. Trying to disable instead".printf( name, e.message ) );
-                proxy.disable();
+                yield proxy.disable();
                 throw e;
             }
         }
@@ -264,19 +298,20 @@ public class Resource : Object
         }
     }
 
-    public void resume() throws FreeSmartphone.ResourceError, DBus.Error
+    public async void resume() throws FreeSmartphone.ResourceError, DBus.Error
     {
         if ( status == ResourceStatus.SUSPENDED )
         {
             try
             {
-                proxy.resume(updateStatus);
+                yield proxy.resume();
                 status = ResourceStatus.ENABLED;
+                updateStatus();
             }
             catch ( DBus.Error e )
             {
                 instance.logger.error( "Resource %s can't be resumed: %s. Trying to disable instead".printf( name, e.message ) );
-                proxy.disable();
+                yield proxy.disable();
                 throw e;
             }
         }
