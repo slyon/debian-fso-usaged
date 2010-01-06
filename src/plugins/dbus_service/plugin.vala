@@ -1,4 +1,4 @@
-/*
+/**
  * Resource Controller DBus Service
  *
  * Written by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
@@ -66,7 +66,7 @@ public class Controller : FsoFramework.AbstractObject
     private bool disable_on_shutdown;
 
     private PersistentData data;
-    private weak HashMap<string,Resource> resources;
+    private HashMap<string,Resource> resources;
 
     dynamic DBus.Object dbus;
     dynamic DBus.Object idlenotifier;
@@ -96,13 +96,14 @@ public class Controller : FsoFramework.AbstractObject
         // get handle to IdleNotifier
         idlenotifier = dbusconn.get_object( FSO_IDLENOTIFIER_BUS, FSO_IDLENOTIFIER_PATH, FSO_IDLENOTIFIER_IFACE );
 
-        // delayed init
-        Idle.add( onIdleForInit );
+        // init resources and low level helpers
+        initResources();
+        initLowlevel();
     }
 
     public override string repr()
     {
-        return "<%s>".printf( FsoFramework.Usage.ServicePathPrefix );
+        return @"<$(resources.size) resources>";
     }
 
 #if PERSISTENCE
@@ -132,7 +133,7 @@ public class Controller : FsoFramework.AbstractObject
     }
 #endif
 
-    private bool onIdleForInit()
+    private void initLowlevel()
     {
         // check preferred low level suspend/resume plugin and instanciate
         var lowleveltype = config.stringValue( CONFIG_SECTION, "lowlevel_type", DEFAULT_LOWLEVEL_MODULE );
@@ -148,7 +149,8 @@ public class Controller : FsoFramework.AbstractObject
                 break;
             default:
                 warning( "Invalid lowlevel_type '%s'; suspend/resume will NOT be available!".printf( lowleveltype ) );
-                return false; // don't call me again
+                lowlevel = new FsoUsage.NullLowLevel();
+                return;
         }
 
         if ( lowleveltype != "none" )
@@ -156,13 +158,18 @@ public class Controller : FsoFramework.AbstractObject
             var lowlevelclass = Type.from_name( typename );
             if ( lowlevelclass == Type.INVALID  )
             {
-                logger.warning( "Can't find plugin for lowlevel_type = '%s'".printf( lowleveltype ) );
-                return false; // don't call me again
+                logger.warning( "Can't find plugin for lowlevel_type = '%s'; suspend/resume will NOT be available!".printf( lowleveltype ) );
+                lowlevel = new FsoUsage.NullLowLevel();
+                return;
             }
 
             lowlevel = Object.new( lowlevelclass ) as FsoUsage.LowLevel;
             logger.info( "Ready. Using lowlevel plugin '%s' to handle suspend/resume".printf( lowleveltype ) );
         }
+    }
+
+    public void initResources()
+    {
 #if PERSISTENCE
         // check whether we have crash data
         if ( loadPersistentData() )
@@ -174,15 +181,15 @@ public class Controller : FsoFramework.AbstractObject
 #endif
         {
             data = new PersistentData();
+            //data.resources = new HashMap<string,Resource>( str_hash, str_equal );
             resources = data.resources;
         }
-
-        return false; // don't call me again
+        assert( resources != null );
     }
 
     private void onResourceAppearing( Resource r )
     {
-        logger.debug( "Resource %s served by %s @ %s has just been registered".printf( r.name, r.busname, r.objectpath ) );
+        assert( logger.debug( "Resource %s served by %s @ %s has just been registered".printf( r.name, r.busname, r.objectpath ) ) );
         this.resource_available( r.name, true ); // DBUS SIGNAL
 
         if ( debug_enable_on_startup )
@@ -221,7 +228,7 @@ public class Controller : FsoFramework.AbstractObject
 
     private void onResourceVanishing( Resource r )
     {
-        logger.debug( "Resource %s served by %s @ %s has just been unregistered".printf( r.name, r.busname, r.objectpath ) );
+        assert( logger.debug( "Resource %s served by %s @ %s has just been unregistered".printf( r.name, r.busname, r.objectpath ) ) );
         this.resource_available( r.name, false ); // DBUS SIGNAL
 
 #if WHY_TRYING_TO_DISABLE_A_VANISHED_RESOURCE
@@ -249,7 +256,7 @@ public class Controller : FsoFramework.AbstractObject
         if ( newowner != "" )
             return;
 
-        logger.debug( "%s disappeared. checking whether resources are affected...".printf( name ) );
+        assert( logger.debug( "%s disappeared. checking whether resources are affected...".printf( name ) ) );
 
         //FIXME: Consider keeping the known busnames in a map as well, so we don't have to iterate through all values
 
@@ -278,15 +285,47 @@ public class Controller : FsoFramework.AbstractObject
         }
     }
 
+    private bool onIdleForShutdown()
+    {
+        Posix.system( "shutdown -now " );
+        return true;
+    }
+
+    private bool onIdleForReboot()
+    {
+        Posix.system( "reboot" );
+        return true;
+    }
+
     private bool onIdleForSuspend()
     {
-        suspendAllResources();
-        logger.debug( ">>>>>>> KERNEL SUSPEND" );
+        logger.info( ">>>>>>> KERNEL SUSPEND" );
+
+        var resourcesAlive = 0;
+        foreach ( var r in resources.values )
+        {
+            if ( ( r.status != ResourceStatus.SUSPENDED ) && ( r.status != ResourceStatus.DISABLED ) )
+            {
+                logger.warning( "Resource $(r.name) is not suspended nor disabled" );
+                resourcesAlive++;
+            }
+        }
+        if ( resourcesAlive > 0 )
+        {
+            logger.error( "%d resources still alive :( Aborting Suspend!" );
+            return false;
+        }
+
         if ( !debug_do_not_suspend )
+        {
             lowlevel.suspend();
+        }
         else
+        {
             Posix.sleep( 5 );
-        logger.debug( "<<<<<<< KERNEL RESUME" );
+        }
+        logger.info( "<<<<<<< KERNEL RESUME" );
+
         FsoUsage.ResumeReason reason = lowlevel.resume();
         logger.info( "Resume reason seems to be %s".printf( FsoFramework.StringHandling.enumToString( typeof( FsoUsage.ResumeReason ), reason) ) );
         resumeAllResources();
@@ -310,66 +349,72 @@ public class Controller : FsoFramework.AbstractObject
         if ( r == null )
             throw new FreeSmartphone.UsageError.RESOURCE_UNKNOWN( "Resource %s had never been registered".printf( name ) );
 
-        logger.debug( "current users for %s = %s".printf( r.name, FsoFramework.StringHandling.stringListToString( r.allUsers() ) ) );
+        assert( logger.debug( "current users for %s = %s".printf( r.name, FsoFramework.StringHandling.stringListToString( r.allUsers() ) ) ) );
 
         return r;
     }
 
-    private void disableAllResources()
+    private async void disableAllResources()
     {
+        assert( logger.debug( "Disabling all resources..." ) );
         foreach ( var r in resources.values )
         {
             try
             {
-                r.disable();
+                yield r.disable();
             }
-            catch ( FreeSmartphone.ResourceError e )
+            catch ( FreeSmartphone.ResourceError e1 )
             {
-                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e.message ) );
+                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e1.message ) );
             }
-            catch ( DBus.Error e )
+            catch ( DBus.Error e2 )
             {
-                logger.warning( "Error while trying to disable resource %s: %s".printf( r.name, e.message ) );
+                logger.warning( "Error while trying to disable resource %s: %s".printf( r.name, e2.message ) );
             }
         }
+        assert( logger.debug( "... done" ) );
     }
 
-    private void suspendAllResources()
+    private async void suspendAllResources()
     {
+        assert( logger.debug( "Suspending all resources..." ) );
         foreach ( var r in resources.values )
         {
             try
             {
-                r.suspend();
+                yield r.suspend();
             }
-            catch ( FreeSmartphone.ResourceError e )
+            catch ( FreeSmartphone.ResourceError e1 )
             {
-                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e.message ) );
+                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e1.message ) );
             }
-            catch ( DBus.Error e )
+            catch ( DBus.Error e2 )
             {
-                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e.message ) );
+                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e2.message ) );
             }
         }
+        assert( logger.debug( "... done disabling." ) );
     }
 
-    private void resumeAllResources()
+    private async void resumeAllResources()
     {
+        assert( logger.debug( "Resuming all resources..." ) );
         foreach ( var r in resources.values )
         {
             try
             {
-                r.resume();
+                yield r.resume();
             }
-            catch ( FreeSmartphone.ResourceError e )
+            catch ( FreeSmartphone.ResourceError e1 )
             {
-                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e.message ) );
+                logger.warning( "Error while trying to suspend resource %s: %s".printf( r.name, e1.message ) );
             }
-            catch ( DBus.Error e )
+            catch ( DBus.Error e2 )
             {
-                logger.warning( "Error while trying to resume resource %s: %s".printf( r.name, e.message ) );
+                logger.warning( "Error while trying to resume resource %s: %s".printf( r.name, e2.message ) );
             }
         }
+        assert( logger.debug( "... done resuming." ) );
     }
 
 #if PERSISTENCE
@@ -459,16 +504,24 @@ public class Controller : FsoFramework.AbstractObject
     //public void set_resource_policy( string name, FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
     public async void set_resource_policy( string name, string policy ) throws FreeSmartphone.UsageError, FreeSmartphone.Error, DBus.Error
     {
-        message( "set resource policy for %s to %s", name, policy );
+        logger.debug( @"Set resource policy for $name to $policy" );
+        var resource = getResource( name );
 
-        if ( policy == "enabled" )
-            getResource( name ).setPolicy( FreeSmartphone.UsageResourcePolicy.ENABLED );
-        else if ( policy == "disabled" )
-            getResource( name ).setPolicy( FreeSmartphone.UsageResourcePolicy.DISABLED );
-        else if ( policy == "auto" )
-            getResource( name ).setPolicy( FreeSmartphone.UsageResourcePolicy.AUTO );
-        else
-            throw new FreeSmartphone.Error.INVALID_PARAMETER( "ResourcePolicy needs to be one of { \"enabled\", \"disabled\", \"auto\" }" );
+        switch ( policy )
+        {
+            case "enabled":
+                yield resource.setPolicy( FreeSmartphone.UsageResourcePolicy.ENABLED );
+                break;
+            case "disabled":
+                yield resource.setPolicy( FreeSmartphone.UsageResourcePolicy.DISABLED );
+                break;
+            case "auto":
+                yield resource.setPolicy( FreeSmartphone.UsageResourcePolicy.AUTO );
+                break;
+            default:
+                throw new FreeSmartphone.Error.INVALID_PARAMETER( "ResourcePolicy needs to be one of { \"enabled\", \"disabled\", \"auto\" }" );
+                break;
+        }
     }
 
     public async bool get_resource_state( string name ) throws FreeSmartphone.UsageError, DBus.Error
@@ -491,31 +544,34 @@ public class Controller : FsoFramework.AbstractObject
 
     public async void request_resource( DBus.BusName sender, string name ) throws FreeSmartphone.UsageError, DBus.Error
     {
-        getResource( name ).addUser( sender );
+        var resource = getResource( name );
+        yield resource.addUser( sender );
     }
 
     public async void release_resource( DBus.BusName sender, string name ) throws FreeSmartphone.UsageError, DBus.Error
     {
-        getResource( name ).delUser( sender );
+        var resource = getResource( name );
+        yield resource.delUser( sender );
     }
 
     public async void shutdown() throws DBus.Error
     {
         this.system_action( FreeSmartphone.UsageSystemAction.SHUTDOWN ); // DBUS SIGNAL
-        disableAllResources();
-        Posix.system( "shutdown -h now" );
+        yield disableAllResources();
+        Idle.add( onIdleForShutdown );
     }
 
     public async void reboot() throws DBus.Error
     {
         this.system_action( FreeSmartphone.UsageSystemAction.REBOOT ); // DBUS SIGNAL
-        disableAllResources();
-        Posix.system( "reboot" );
+        yield disableAllResources();
+        Idle.add( onIdleForReboot );
     }
 
     public async void suspend() throws DBus.Error
     {
         this.system_action( FreeSmartphone.UsageSystemAction.SUSPEND ); // DBUS SIGNAL
+        yield suspendAllResources();
         // we need to suspend async, otherwise the dbus call would timeout
         Idle.add( onIdleForSuspend );
     }

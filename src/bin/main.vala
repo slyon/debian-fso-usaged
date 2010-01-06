@@ -25,6 +25,13 @@ FsoFramework.Subsystem subsystem;
 public static void sighandler( int signum )
 {
     Posix.signal( signum, null ); // restore original sighandler
+#if LINUX_HAVE_BACKTRACE
+    var backtrace = FsoFramework.Utility.createBacktrace();
+    foreach ( var line in backtrace )
+    {
+        logger.error( line );
+    }
+#endif
     logger.info( "received signal -%d, shutting down...".printf( signum ) );
     subsystem.shutdown();
     mainloop.quit();
@@ -34,7 +41,7 @@ public static int main( string[] args )
 {
     var bin = FsoFramework.Utility.programName();
     logger = FsoFramework.createLogger( bin, bin );
-    logger.info( "%s starting up...".printf( bin ) );
+    logger.info( @"$bin $(Config.PACKAGE_VERSION)-$(Config.PACKAGE_GITV) starting up..." );
     subsystem = new FsoFramework.DBusSubsystem( "fsousage" );
     subsystem.registerPlugins();
     uint count = subsystem.loadPlugins();
