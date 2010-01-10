@@ -1,8 +1,14 @@
+fso-usaged (0.9.1+git20100106-1) unstable; urgency=low
+
+  * New upstream snapshot
+
+ -- Heiko Stuebner <heiko@sntech.de>  Sun, 10 Jan 2010 20:56:10 +0100
+
 fso-usaged (0.9.1+git20091016-2) unstable; urgency=low
 
   * rebuild against newer versions of libfsobasics and libfsoframework
 
- -- Heiko Stuebner <heiko@sntech.de>  Sun, 22 Nov 2009 21:33:10 +0200
+ -- Heiko Stuebner <heiko@sntech.de>  Sun, 22 Nov 2009 21:33:10 +0100
 
 fso-usaged (0.9.1+git20091016-1) unstable; urgency=low
 
