@@ -1,3 +1,11 @@
+fso-usaged (0.9.1.1+git20100224-1) unstable; urgency=low
+
+  * New upstream snapshot
+  * Bump standards to 3.8.4
+  * Install default configs for specific hardware
+
+ -- Heiko Stuebner <heiko@sntech.de>  Sat, 13 Mar 2010 19:58:10 +0100
+
 fso-usaged (0.9.1+git20100106-1) unstable; urgency=low
 
   * New upstream snapshot
