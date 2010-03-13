@@ -15,6 +15,8 @@
 
 @SET_MAKE@
 
+# GLIB - Library of useful C routines
+
 
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
@@ -35,9 +37,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS =
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(top_srcdir)/Makefile.decl
+noinst_PROGRAMS = $(am__EXEEXT_1)
 subdir = src/plugins/dbus_service
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -72,11 +75,10 @@ LTLIBRARIES = $(modlibexec_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(top_srcdir)/src/lib/libfsousage.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 dbus_service_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_dbus_service_la_OBJECTS = dbus_service_la-resource.lo \
-	dbus_service_la-plugin.lo
+	dbus_service_la-commands.lo dbus_service_la-plugin.lo
 dbus_service_la_OBJECTS = $(am_dbus_service_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -85,6 +87,7 @@ dbus_service_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(dbus_service_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am__EXEEXT_1 =
 PROGRAMS = $(noinst_PROGRAMS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -181,8 +184,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PERSISTENCE_CFLAGS = @PERSISTENCE_CFLAGS@
-PERSISTENCE_LIBS = @PERSISTENCE_LIBS@
 PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 SED = @SED@
@@ -245,12 +246,17 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+GTESTER = gtester 
+GTESTER_REPORT = gtester-report
+
+# initialize variables for unconditional += appending
+EXTRA_DIST = 
+TEST_PROGS = 
 NULL = 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(DBUS_CFLAGS) \
 	$(GEE_CFLAGS) \
-	$(PERSISTENCE_CFLAGS) \
 	$(FSO_CFLAGS) \
 	$(NULL)
 
@@ -258,7 +264,6 @@ progs_ldadd = \
 	$(top_srcdir)/src/lib/libfsousage.la \
 	$(DBUS_LIBS) \
 	$(GEE_LIBS) \
-	$(PERSISTENCE_LIBS) \
 	$(FSO_LIBS) \
 	$(NULL)
 
@@ -279,8 +284,8 @@ VALAC_ARGS = \
 #
 modlibexecdir = $(libdir)/cornucopia/modules/fsousage
 modlibexec_LTLIBRARIES = dbus_service.la
-dbus_service_la_SOURCES = resource.c plugin.c
-dbus_service_la_VALASOURCES = resource.vala plugin.vala
+dbus_service_la_SOURCES = resource.c commands.c plugin.c
+dbus_service_la_VALASOURCES = resource.vala commands.vala plugin.vala
 dbus_service_la_LIBADD = $(progs_ldadd)
 dbus_service_la_LDFLAGS = -no-undefined -module -avoid-version
 dbus_service_la_LIBTOOLFLAGS = --tag=disable-static
@@ -299,7 +304,7 @@ all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/Makefile.decl $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -378,6 +383,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus_service_la-commands.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus_service_la-plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus_service_la-resource.Plo@am__quote@
 
@@ -412,6 +418,14 @@ dbus_service_la-resource.lo: resource.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='resource.c' object='dbus_service_la-resource.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbus_service_la-resource.lo `test -f 'resource.c' || echo '$(srcdir)/'`resource.c
+
+dbus_service_la-commands.lo: commands.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbus_service_la-commands.lo -MD -MP -MF $(DEPDIR)/dbus_service_la-commands.Tpo -c -o dbus_service_la-commands.lo `test -f 'commands.c' || echo '$(srcdir)/'`commands.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/dbus_service_la-commands.Tpo $(DEPDIR)/dbus_service_la-commands.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='commands.c' object='dbus_service_la-commands.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbus_service_la-commands.lo `test -f 'commands.c' || echo '$(srcdir)/'`commands.c
 
 dbus_service_la-plugin.lo: plugin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(dbus_service_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbus_service_la-plugin.lo -MD -MP -MF $(DEPDIR)/dbus_service_la-plugin.Tpo -c -o dbus_service_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
@@ -510,6 +524,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
 installdirs:
@@ -614,25 +629,72 @@ ps-am:
 
 uninstall-am: uninstall-modlibexecLTLIBRARIES
 
-.MAKE: install-am install-strip
+.MAKE: check-am install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-modlibexecLTLIBRARIES clean-noinstPROGRAMS \
-	ctags distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-modlibexecLTLIBRARIES \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-modlibexecLTLIBRARIES
+.PHONY: CTAGS GTAGS all all-am check check-am check-local clean \
+	clean-generic clean-libtool clean-modlibexecLTLIBRARIES \
+	clean-noinstPROGRAMS ctags distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man \
+	install-modlibexecLTLIBRARIES install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-modlibexecLTLIBRARIES
 
 
-@PERSISTENCE_TRUE@	VALAC_EXTRA_ARGS = -DPERSISTENCE --pkg persistence-1.0
+### testing rules
+
+# test: run all tests in cwd and subdirs
+test:	${TEST_PROGS}
+	@test -z "${TEST_PROGS}" || ${GTESTER} --verbose ${TEST_PROGS}
+	@ for subdir in $(SUBDIRS) . ; do \
+	    test "$$subdir" = "." -o "$$subdir" = "po" || \
+	    ( cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $@ ) || exit $? ; \
+	  done
+# test-report: run tests in subdirs and generate report
+# perf-report: run tests in subdirs with -m perf and generate report
+# full-report: like test-report: with -m perf and -m slow
+test-report perf-report full-report:	${TEST_PROGS}
+	@test -z "${TEST_PROGS}" || { \
+	  case $@ in \
+	  test-report) test_options="-k";; \
+	  perf-report) test_options="-k -m=perf";; \
+	  full-report) test_options="-k -m=perf -m=slow";; \
+	  esac ; \
+	  if test -z "$$GTESTER_LOGDIR" ; then	\
+	    ${GTESTER} --verbose $$test_options -o test-report.xml ${TEST_PROGS} ; \
+	  elif test -n "${TEST_PROGS}" ; then \
+	    ${GTESTER} --verbose $$test_options -o `mktemp "$$GTESTER_LOGDIR/log-XXXXXX"` ${TEST_PROGS} ; \
+	  fi ; \
+	}
+	@ ignore_logdir=true ; \
+	  if test -z "$$GTESTER_LOGDIR" ; then \
+	    GTESTER_LOGDIR=`mktemp -d "\`pwd\`/.testlogs-XXXXXX"`; export GTESTER_LOGDIR ; \
+	    ignore_logdir=false ; \
+	  fi ; \
+	  for subdir in $(SUBDIRS) . ; do \
+	    test "$$subdir" = "." -o "$$subdir" = "po" || \
+	    ( cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $@ ) || exit $? ; \
+	  done ; \
+	  $$ignore_logdir || { \
+	    echo '<?xml version="1.0"?>' > $@.xml ; \
+	    echo '<report-collection>'  >> $@.xml ; \
+	    for lf in `ls -L "$$GTESTER_LOGDIR"/.` ; do \
+	      sed '1,1s/^<?xml\b[^>?]*?>//' <"$$GTESTER_LOGDIR"/"$$lf" >> $@.xml ; \
+	    done ; \
+	    echo >> $@.xml ; \
+	    echo '</report-collection>' >> $@.xml ; \
+	    rm -rf "$$GTESTER_LOGDIR"/ ; \
+	    ${GTESTER_REPORT} --version 2>/dev/null 1>&2 ; test "$$?" != 0 || ${GTESTER_REPORT} $@.xml >$@.html ; \
+	  }
+.PHONY: test test-report perf-report full-report
+# run make test as part of make check
+check-local: test
 $(dbus_service_la_SOURCES): $(dbus_service_la_VALASOURCES)
 	$(VALAC) -C $(VALAC_ARGS) $(VALAC_EXTRA_ARGS) $^
 	touch $@

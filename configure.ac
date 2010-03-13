@@ -1,4 +1,4 @@
-AC_INIT([fsousaged], [0.9.1.1], [smartphones-userland@linuxtogo.org], [fsousaged])
+AC_INIT([fsousaged], [0.9.1.2], [smartphones-userland@linuxtogo.org], [fsousaged])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([dist-bzip2])
@@ -24,7 +24,6 @@ DBUS_REQUIRED=1.2.1
 DBUS_GLIB_REQUIRED=0.76
 FSO_GLIB_REQUIRED=0.2.0
 FSO_REQUIRED=0.2.3
-PERSISTENCE_REQUIRED=0.0.0
 
 # vala
 PKG_CHECK_MODULES(VALA,
@@ -50,23 +49,6 @@ PKG_CHECK_MODULES(DBUS,
   dbus-glib-1 >= $DBUS_GLIB_REQUIRED)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
-
-AC_ARG_ENABLE(persistence,
-[  --enable-persistence    Use persistence library to improve restartability],
-[case "${enableval}" in
-  yes) persistence=true ;;
-  no)  persistence=false ;;
-  *) AC_MSG_ERROR(bad value ${enableval} for --enable-persistence) ;;
-esac],[persistence=false])
-AM_CONDITIONAL(PERSISTENCE, test x$persistence = xtrue)
-
-if test x$persistence = xtrue; then
-    # persistence
-    PKG_CHECK_MODULES(PERSISTENCE,
-      persistence-1.0 >= $PERSISTENCE_REQUIRED)
-    AC_SUBST(PERSISTENCE_CFLAGS)
-    AC_SUBST(PERSISTENCE_LIBS)
-fi
 
 # dbus conf directory
 DBUS_DIR="`$PKG_CONFIG --variable=sysconfdir dbus-1`"
@@ -97,6 +79,11 @@ AC_DEFINE_UNQUOTED([PACKAGE_GITV], ["${GITV}"], [git version])
 
 AC_CONFIG_FILES([
   Makefile
+  conf/Makefile
+  conf/default/Makefile
+  conf/openmoko_gta/Makefile
+  data/org.freesmartphone.ousaged.service
+  data/Makefile
   src/Makefile
   src/lib/Makefile
   src/bin/Makefile
@@ -104,8 +91,6 @@ AC_CONFIG_FILES([
   src/plugins/dbus_service/Makefile
   src/plugins/lowlevel_kernel26/Makefile
   src/plugins/lowlevel_openmoko/Makefile
-  data/org.freesmartphone.ousaged.service
-  data/Makefile
   tests/Makefile
 ])
 
