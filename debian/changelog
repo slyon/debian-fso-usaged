@@ -1,3 +1,9 @@
+fso-usaged (0.9.1.1+git20100224-2) unstable; urgency=low
+
+  * Add patch to fix a bug in vala 0.7.10 concerning the DBus object
+
+ -- Heiko Stuebner <heiko@sntech.de>  Tue, 18 Mar 2010 17:15:50 +0100
+
 fso-usaged (0.9.1.1+git20100224-1) unstable; urgency=low
 
   * New upstream snapshot
