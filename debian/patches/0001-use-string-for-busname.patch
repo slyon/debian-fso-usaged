@@ -1,0 +1,25 @@
+From 2930cc9a35cbf5c0354a06e62c8538f94b35a0e0 Mon Sep 17 00:00:00 2001
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Thu, 18 Mar 2010 17:11:00 +0100
+Subject: [PATCH] use string for busname
+
+---
+ src/plugins/dbus_service/resource.vala |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/plugins/dbus_service/resource.vala b/src/plugins/dbus_service/resource.vala
+index 96b22ef..f33110b 100644
+--- a/src/plugins/dbus_service/resource.vala
++++ b/src/plugins/dbus_service/resource.vala
+@@ -44,7 +44,7 @@ public enum ResourceStatus
+ public class Resource : Object
+ {
+     public string name { get; set; }
+-    public DBus.BusName busname { get; set; }
++    public string busname { get; set; }
+     public DBus.ObjectPath objectpath { get; set; }
+     public ResourceStatus status { get; set; }
+     public FreeSmartphone.UsageResourcePolicy policy { get; set; }
+-- 
+1.6.5
+
