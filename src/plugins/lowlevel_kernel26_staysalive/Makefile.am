@@ -38,15 +38,15 @@ endif
 # plugin
 #
 modlibexecdir = $(libdir)/cornucopia/modules/fsousage
-modlibexec_LTLIBRARIES = lowlevel_openmoko.la
-lowlevel_openmoko_la_SOURCES = plugin.c
-lowlevel_openmoko_la_VALASOURCES = plugin.vala
-$(lowlevel_openmoko_la_SOURCES): $(lowlevel_openmoko_la_VALASOURCES)
+modlibexec_LTLIBRARIES = lowlevel_kernel26_staysalive.la
+lowlevel_kernel26_staysalive_la_SOURCES = plugin.c
+lowlevel_kernel26_staysalive_la_VALASOURCES = plugin.vala
+$(lowlevel_kernel26_staysalive_la_SOURCES): $(lowlevel_kernel26_staysalive_la_VALASOURCES)
 	$(VALAC) -C $(VALAC_ARGS) $^
 	touch $@
-lowlevel_openmoko_la_LIBADD = $(progs_ldadd)
-lowlevel_openmoko_la_LDFLAGS = -no-undefined -module -avoid-version
-lowlevel_openmoko_la_LIBTOOLFLAGS = --tag=disable-static
+lowlevel_kernel26_staysalive_la_LIBADD = $(progs_ldadd)
+lowlevel_kernel26_staysalive_la_LDFLAGS = -no-undefined -module -avoid-version
+lowlevel_kernel26_staysalive_la_LIBTOOLFLAGS = --tag=disable-static
 
 CLEANFILES = \
     plugin.c \

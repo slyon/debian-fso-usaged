@@ -1,4 +1,4 @@
-AC_INIT([fsousaged], [0.9.1.2], [smartphones-userland@linuxtogo.org], [fsousaged])
+AC_INIT([fsousaged], [0.9.4], [smartphones-userland@linuxtogo.org], [fsousaged])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([dist-bzip2])
@@ -65,6 +65,12 @@ if (test -z "{DBUS_SERVICE_DIR}"); then
   DBUS_SERVICE_DIR="${datadir}/dbus-1/services"
 fi
 AC_SUBST(DBUS_SERVICE_DIR)
+AC_DEFINE_UNQUOTED([DBUS_SERVICE_DIR], ["${DBUS_SERVICE_DIR}"], [dbus service activation dir])
+
+# dbus system service directory
+DBUS_SYSTEM_SERVICE_DIR="`echo $DBUS_SERVICE_DIR | sed -e s,services,system-services,g`"
+AC_SUBST(DBUS_SYSTEM_SERVICE_DIR)
+AC_DEFINE_UNQUOTED([DBUS_SYSTEM_SERVICE_DIR], ["${DBUS_SYSTEM_SERVICE_DIR}"], [dbus system service activation dir])
 
 # fso-glib and framework
 PKG_CHECK_MODULES(FSO,
@@ -72,6 +78,12 @@ PKG_CHECK_MODULES(FSO,
   fsoframework-2.0 >= $FSO_REQUIRED)
 AC_SUBST(FSO_CFLAGS)
 AC_SUBST(FSO_LIBS)
+
+# check for debugging
+AC_ARG_ENABLE(debug,
+  [  --enable-debug            Enable debug build (default=disabled)],
+  debug="yes", debug="no")
+AM_CONDITIONAL( [WANT_DEBUG], [test x"$debug" = x"yes"])
 
 # git version
 GITV=`cat ../.git/refs/heads/master || echo "unknown"`
@@ -81,6 +93,7 @@ AC_CONFIG_FILES([
   Makefile
   conf/Makefile
   conf/default/Makefile
+  conf/htc_qualcomm_dream/Makefile
   conf/openmoko_gta/Makefile
   data/org.freesmartphone.ousaged.service
   data/Makefile
@@ -90,6 +103,7 @@ AC_CONFIG_FILES([
   src/plugins/Makefile
   src/plugins/dbus_service/Makefile
   src/plugins/lowlevel_kernel26/Makefile
+  src/plugins/lowlevel_kernel26_staysalive/Makefile
   src/plugins/lowlevel_openmoko/Makefile
   tests/Makefile
 ])
@@ -108,6 +122,8 @@ echo
 echo "Configuration Options:"
 echo
 echo "  prefix..................: $prefix"
+echo 
+echo "  debug...................: $debug"
 echo
 echo "------------------------------------------------------------------------"
 echo
