@@ -1,4 +1,4 @@
-/**
+/*
  * FSO Resource Abstraction
  *
  * (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
@@ -39,23 +39,35 @@ public enum ResourceStatus
 }
 
 /**
+ * @interface IResource
+ **/
+public interface IResource : Object
+{
+    public abstract async void setPolicy( FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.ResourceError, DBus.Error;
+    public abstract async void enable() throws FreeSmartphone.ResourceError, DBus.Error;
+    public abstract async void disable() throws FreeSmartphone.ResourceError, DBus.Error;
+    public abstract async void suspend() throws FreeSmartphone.ResourceError, DBus.Error;
+    public abstract async void resume() throws FreeSmartphone.ResourceError, DBus.Error;
+}
+
+/**
  * Helper class encapsulating a registered resource
  **/
-public class Resource : Object
+public class Resource : IResource, Object
 {
     public string name { get; set; }
     public DBus.BusName busname { get; set; }
-    public DBus.ObjectPath objectpath { get; set; }
+    public DBus.ObjectPath? objectpath { get; set; }
     public ResourceStatus status { get; set; }
     public FreeSmartphone.UsageResourcePolicy policy { get; set; }
     public ArrayList<string> users { get; set; }
 
-    private FreeSmartphone.Resource proxy;
+    public FreeSmartphone.Resource proxy;
 
     // every resource has a command queue
     public LinkedList<unowned ResourceCommand> q;
 
-    public Resource( string name, DBus.BusName busname, DBus.ObjectPath objectpath )
+    public Resource( string name, DBus.BusName busname, DBus.ObjectPath? objectpath = null )
     {
         this.users = new ArrayList<string>();
         this.q = new LinkedList<unowned ResourceCommand>();
@@ -66,9 +78,15 @@ public class Resource : Object
         this.status = ResourceStatus.UNKNOWN;
         this.policy = FreeSmartphone.UsageResourcePolicy.AUTO;
 
-        proxy = dbusconn.get_object( busname, objectpath, RESOURCE_INTERFACE ) as FreeSmartphone.Resource;
-
-        assert( FsoFramework.theLogger.debug( @"Resource $name served by $busname ($objectpath) created" ) );
+        if ( objectpath != null )
+        {
+            proxy = dbusconn.get_object( busname, objectpath, RESOURCE_INTERFACE ) as FreeSmartphone.Resource;
+            assert( FsoFramework.theLogger.debug( @"Resource $name served by $busname ($objectpath) created" ) );
+        }
+        else
+        {
+            assert( FsoFramework.theLogger.debug( @"Shadow Resource $name served by $busname (unknown objectpath) created" ) );
+        }
     }
 
     ~Resource()
@@ -107,7 +125,7 @@ public class Resource : Object
         return ( user in users );
     }
 
-    public async void setPolicy( FreeSmartphone.UsageResourcePolicy policy )
+    public virtual async void setPolicy( FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.ResourceError, DBus.Error
     {
         if ( policy == this.policy )
             return;
@@ -236,8 +254,32 @@ public class Resource : Object
         }
     }
 
-    public async void enable() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void enableShadowResource() throws FreeSmartphone.ResourceError, DBus.Error
     {
+        assert( instance.logger.debug( @"Resource $name is shadow resource; pinging..." ) );
+        DBus.IPeer service = dbusconn.get_object( busname, "/", DBus.DBUS_INTERFACE_PEER ) as DBus.IPeer;
+#if DEBUG
+        message( "PING" );
+#endif
+        service.Ping();
+#if DEBUG
+        message( "PONG" );
+        Timeout.add_seconds( 3, enableShadowResource.callback );
+        yield;
+#endif
+    }
+
+    public virtual async void enable() throws FreeSmartphone.ResourceError, DBus.Error
+    {
+        if ( objectpath == null )
+        {
+            message( "enableShadowResource" );
+            yield enableShadowResource();
+            message( "shadowResourceEnabled" );
+        }
+
+        assert( proxy != null );
+
         try
         {
             yield proxy.enable();
@@ -252,8 +294,12 @@ public class Resource : Object
         }
     }
 
-    public async void disable() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void disable() throws FreeSmartphone.ResourceError, DBus.Error
     {
+        // no need to disable a shadow resource
+        if ( objectpath == null )
+            return;
+
         try
         {
             yield proxy.disable();
@@ -268,7 +314,7 @@ public class Resource : Object
         }
     }
 
-    public async void suspend() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void suspend() throws FreeSmartphone.ResourceError, DBus.Error
     {
         if ( status == ResourceStatus.ENABLED )
         {
@@ -291,7 +337,7 @@ public class Resource : Object
         }
     }
 
-    public async void resume() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void resume() throws FreeSmartphone.ResourceError, DBus.Error
     {
         if ( status == ResourceStatus.SUSPENDED )
         {

@@ -1,5 +1,5 @@
-/**
- * Resource Controller DBus Service
+/*
+ * FSO Resource Controller DBus Service
  *
  * (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
@@ -29,6 +29,9 @@ internal const string DEFAULT_LOWLEVEL_MODULE = "kernel26";
 internal const string FSO_IDLENOTIFIER_BUS   = "org.freesmartphone.odeviced";
 internal const string FSO_IDLENOTIFIER_PATH  = "/org/freesmartphone/Device/IdleNotifier/0";
 internal const string FSO_IDLENOTIFIER_IFACE = "org.freesmartphone.Device.IdleNotifier";
+
+internal const string FSO_DBUS_RESOURCE_PROVIDER_SECTION = "D-BUS Service";
+internal const string FSO_DBUS_RESOURCE_PROVIDER_KEY = "FSO-provides-resource";
 
 namespace Usage {
 
@@ -86,6 +89,7 @@ public class Controller : FsoFramework.AbstractObject
         // init resources and low level helpers
         initResources();
         initLowlevel();
+        scanForResourceProviders();
 
         // initial status
         Idle.add( () => {
@@ -99,6 +103,11 @@ public class Controller : FsoFramework.AbstractObject
         return @"<$(resources.size) R>";
     }
 
+    private void initResources()
+    {
+        resources = new HashMap<string,Resource>( str_hash, str_equal );
+    }
+
     private void initLowlevel()
     {
         // check preferred low level suspend/resume plugin and instanciate
@@ -109,6 +118,9 @@ public class Controller : FsoFramework.AbstractObject
         {
             case "kernel26":
                 typename = "LowLevelKernel26";
+                break;
+            case "kernel26_staysalive":
+                typename = "LowLevelKernel26_StaysAlive";
                 break;
             case "openmoko":
                 typename = "LowLevelOpenmoko";
@@ -134,9 +146,43 @@ public class Controller : FsoFramework.AbstractObject
         }
     }
 
-    public void initResources()
+    private void scanForResourceProviders()
     {
-        resources = new HashMap<string,Resource>( str_hash, str_equal );
+        assert( logger.debug( @"Scanning for resource providers in $(Config.DBUS_SYSTEM_SERVICE_DIR)" ) );
+
+        var dir = GLib.Dir.open( Config.DBUS_SYSTEM_SERVICE_DIR );
+
+        for ( var name = dir.read_name(); name != null; name = dir.read_name() )
+        {
+            if ( name.has_suffix( ".service" ) )
+            {
+                var smk = new FsoFramework.SmartKeyFile();
+                if ( smk.loadFromFile( GLib.Path.build_filename( Config.DBUS_SYSTEM_SERVICE_DIR, name ) ) )
+                {
+                    var fsoresources = smk.stringListValue( FSO_DBUS_RESOURCE_PROVIDER_SECTION, FSO_DBUS_RESOURCE_PROVIDER_KEY, {} );
+                    if ( fsoresources.length > 0 )
+                    {
+                        foreach ( var resource in fsoresources )
+                        {
+                            assert( logger.debug( @"Service $name claims to provide FSO resource $resource" ) );
+                            if ( resource in resources.keys )
+                            {
+                                assert( logger.debug( @"Skipping resource $resource which has already been registered" ) );
+                            }
+                            else
+                            {
+                                var r = new Resource( resource, new DBus.BusName( name.replace( ".service", "" ) ), null ); // register as shadow resource
+                                resources[resource] = r;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        assert( logger.debug( @"Service $name does not provide any FSO resources" ) );
+                    }
+                }
+            }
+        }
     }
 
     private void onResourceAppearing( Resource r )
@@ -246,7 +292,7 @@ public class Controller : FsoFramework.AbstractObject
         }
         else
         {
-            assert( logger.debug( "Not really suspending as instructed per debug_do_not_suspend. Sleeping 5 seconds..." ) );
+            assert( logger.debug( "Not really suspending as instructed per debug_do_not_suspend. Sleeping 5 seconds instead..." ) );
             Posix.sleep( 5 );
         }
         logger.info( "<<<<<<< KERNEL RESUME" );
@@ -362,7 +408,24 @@ public class Controller : FsoFramework.AbstractObject
         debug( "register_resource called with parameters: %s %s %s", sender, name, path );
 #endif
         if ( name in resources.keys )
-            throw new FreeSmartphone.UsageError.RESOURCE_EXISTS( @"Resource $name already registered" );
+        {
+            // shadow resource?
+            if ( resources[name].objectpath != null )
+            {
+                // no
+                throw new FreeSmartphone.UsageError.RESOURCE_EXISTS( @"Resource $name already registered" );
+            }
+            else
+            {
+#if DEBUG
+                debug( @"shadow $name will now be substituted with the real thing..." );
+#endif
+                resources[name].objectpath = path;
+                resources[name].proxy = dbusconn.get_object( sender, path, RESOURCE_INTERFACE ) as FreeSmartphone.Resource;
+
+                return;
+            }
+        }
 
         var r = new Resource( name, sender, path );
         resources[name] = r;
@@ -489,6 +552,12 @@ public class Controller : FsoFramework.AbstractObject
     public async void suspend() throws DBus.Error
     {
         var cmd = new Suspend();
+        yield cmd.run();
+    }
+
+    public async void resume() throws DBus.Error
+    {
+        var cmd = new Resume();
         yield cmd.run();
     }
 

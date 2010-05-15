@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* dbus service activation dir */
+#undef DBUS_SERVICE_DIR
+
+/* dbus system service activation dir */
+#undef DBUS_SYSTEM_SERVICE_DIR
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
