@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
@@ -57,8 +57,8 @@ string sys_power_state;
  **/
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
-    debug( "lowlevel_kernel26 fso_factory_function" );
-    return "fsousaged.lowlevel_kernel26";
+    FsoFramework.theLogger.debug( "lowlevel_kernel26 fso_factory_function" );
+    return "fsousage.lowlevel_kernel26";
 }
 
 [ModuleInit]

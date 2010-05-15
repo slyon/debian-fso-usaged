@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 NULL =
 
-AM_CPPFLAGS = \
+AM_CFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(DBUS_CFLAGS) \
 	$(GEE_CFLAGS) \
@@ -20,14 +20,20 @@ progs_ldadd = \
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
-	--vapidir ./ \
 	--vapidir $(top_srcdir)/src/lib \
+	--vapidir $(top_srcdir)/vapi \
+	--pkg config \
 	--pkg glib-2.0 \
 	--pkg gee-1.0 \
 	--pkg dbus-glib-1 \
 	--pkg fsoframework-2.0 \
 	--pkg fso-glib-1.0 \
 	--pkg fsousage-2.0
+
+if WANT_DEBUG
+VALAC_ARGS += -g -D DEBUG
+AM_CFLAGS += -ggdb -O0
+endif
 
 #
 # plugin
