@@ -1,1 +1,2 @@
 fso-usaged: package-name-doesnt-match-sonames
+fso-usaged: binary-without-manpage usr/sbin/fsousaged

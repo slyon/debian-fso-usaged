@@ -2,10 +2,10 @@ Source: fso-usaged
 Section: misc
 Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
-Uploaders: Heiko Stuebner <heiko@sntech.de>
+Uploaders: Heiko Stuebner <heiko@sntech.de>, Rico Rommel <rico@bierrommel.de>
 DM-Upload-Allowed: yes
-Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.8.1), libvala-dev (>= 0.8.1), libgee-dev (>= 0.5.0), libfso-glib-dev (>= 0.2.1+git20100501), libfsoframework-dev (>= 0.2.4+git20100222), pkg-config, libfsobasics-dev (>= 0.9.0+git20100509)
-Standards-Version: 3.8.4
+Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev (>= 2.26.0), libdbus-1-dev, libdbus-glib-1-dev, valac-0.12, libvala-0.12-dev, libgee-dev (>= 0.5.0), libfso-glib-dev (>= 2011.06.01.1), libfsoframework-dev (>= 0.2.4+git20100222), pkg-config, libfsobasics-dev (>= 0.9.99+git20110804), quilt, autoconf, automake, libtool
+Standards-Version: 3.9.2
 Homepage: http://freesmartphone.org/
 Vcs-Git: git://git.debian.org/git/pkg-fso/fso-usaged.git
 Vcs-Browser: http://git.debian.org/?p=pkg-fso/fso-usaged.git;a=summary
@@ -18,3 +18,44 @@ Description: freesmartphone.org usage daemon
  .
  This package is part of the freesmartphone.org software stack
  and is targeted for smartphones.
+
+Package: fso-usaged-dbg
+Architecture: any
+Section: debug
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version}), fso-usaged-openmoko (= ${binary:Version}), fso-usaged-htc (= ${binary:Version}), fso-usaged-palmpre (= ${binary:Version})
+Description: debugging symbols for use with freesmartphone.org usage daemon
+ This daemon implements the freesmartphone.org Usage API
+ .
+ This package is part of the freesmartphone.org software stack
+ and is targeted for smartphones.
+
+Package: fso-usaged-openmoko
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version})
+Conflicts: fso-usaged (<< 0.9.5+git20110411)
+Description: freesmartphone.org usage daemon for Openmoko devices
+ This daemon implements the freesmartphone.org Usage API
+ .
+ This package is part of the freesmartphone.org software stack
+ and is targeted for smartphones.
+
+Package: fso-usaged-htc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version})
+Conflicts: fso-usaged (<< 0.9.5+git20110411)
+Description: freesmartphone.org usage daemon for HTC devices
+ This daemon implements the freesmartphone.org Usage API
+ .
+ This package is part of the freesmartphone.org software stack
+ and is targeted for smartphones.
+
+Package: fso-usaged-palmpre
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version}) 
+Conflicts: fso-usaged (<< 0.9.5+git20110411)
+Description: freesmartphone.org usage daemon for Palm Pre devices
+ This daemon implements the freesmartphone.org Usage API
+ .
+ This package is part of the freesmartphone.org software stack
+ and is targeted for smartphones.
+

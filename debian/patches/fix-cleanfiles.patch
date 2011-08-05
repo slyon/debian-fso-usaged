@@ -1,0 +1,31 @@
+--- a/src/lib/Makefile.am
++++ b/src/lib/Makefile.am
+@@ -61,10 +61,12 @@
+ CLEANFILES = \
+ 	$(BUILT_SOURCES) \
+ 	$(libfsousage_la_SOURCES) \
++	fsousage.h \
+ 	$(NULL)
+ 
+ MAINTAINERCLEANFILES = \
+ 	$(BUILT_SOURCES) \
+ 	$(libfsousage_la_SOURCES) \
++	fsousage.h \
+ 	Makefile.in
+ 
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -9,3 +9,5 @@
+ 	plugins \
+ 	bin \
+ 	$(NULL)
++
++MAINTAINERCLEANFILES = Makefile.in
+--- a/src/plugins/Makefile.am
++++ b/src/plugins/Makefile.am
+@@ -13,3 +13,5 @@
+ 	lowlevel_openmoko \
+ 	lowlevel_palmpre \
+ 	$(NULL)
++
++MAINTAINERCLEANFILES = Makefile.in

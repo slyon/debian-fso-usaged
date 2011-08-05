@@ -1,0 +1,11 @@
+--- a/src/plugins/dbus_service/Makefile.am
++++ b/src/plugins/dbus_service/Makefile.am
+@@ -55,6 +55,7 @@
+     plugin.h \
+     *.la \
+     *.lo \
++    $(dbus_service_la_SOURCES) \
+     $(NULL)
+ 
+ MAINTAINERCLEANFILES = \
+
