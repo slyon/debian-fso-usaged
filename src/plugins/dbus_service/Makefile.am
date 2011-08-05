@@ -4,16 +4,17 @@ NULL =
 
 AM_CFLAGS = \
 	-I$(top_srcdir)/src/lib \
-	$(DBUS_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(GEE_CFLAGS) \
 	$(FSO_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsousage.dbus_service\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
 
 progs_ldadd = \
 	$(top_srcdir)/src/lib/libfsousage.la \
-	$(DBUS_LIBS) \
+	$(GLIB_LIBS) \
 	$(GEE_LIBS) \
 	$(FSO_LIBS) \
 	$(NULL)
@@ -24,8 +25,8 @@ VALAC_ARGS = \
 	--vapidir $(top_srcdir)/vapi \
 	--pkg config \
 	--pkg glib-2.0 \
+	--pkg gio-2.0 \
 	--pkg gee-1.0 \
-	--pkg dbus-glib-1 \
 	--pkg fsoframework-2.0 \
 	--pkg fso-glib-1.0 \
 	--pkg fsousage-2.0

@@ -1,7 +1,7 @@
 /*
  * FSO Resource Abstraction
  *
- * (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,31 +23,17 @@ using GLib;
 using Gee;
 
 namespace Usage {
-/**
- * Enum for resource status
- **/
-public enum ResourceStatus
-{
-    UNKNOWN,
-    ENABLING,
-    ENABLED,
-    SUSPENDING,
-    SUSPENDED,
-    RESUMING,
-    DISABLING,
-    DISABLED
-}
 
 /**
  * @interface IResource
  **/
 public interface IResource : Object
 {
-    public abstract async void setPolicy( FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.ResourceError, DBus.Error;
-    public abstract async void enable() throws FreeSmartphone.ResourceError, DBus.Error;
-    public abstract async void disable() throws FreeSmartphone.ResourceError, DBus.Error;
-    public abstract async void suspend() throws FreeSmartphone.ResourceError, DBus.Error;
-    public abstract async void resume() throws FreeSmartphone.ResourceError, DBus.Error;
+    public abstract async void setPolicy( FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.ResourceError, DBusError, IOError;
+    public abstract async void enable() throws FreeSmartphone.ResourceError, DBusError, IOError;
+    public abstract async void disable() throws FreeSmartphone.ResourceError, DBusError, IOError;
+    public abstract async void suspend() throws FreeSmartphone.ResourceError, DBusError, IOError;
+    public abstract async void resume() throws FreeSmartphone.ResourceError, DBusError, IOError;
 }
 
 /**
@@ -56,18 +42,20 @@ public interface IResource : Object
 public class Resource : IResource, Object
 {
     public string name { get; set; }
-    public DBus.BusName busname { get; set; }
-    public DBus.ObjectPath? objectpath { get; set; }
-    public ResourceStatus status { get; set; }
+    public GLib.BusName busname { get; set; }
+    public GLib.ObjectPath? objectpath { get; set; }
+    public FsoFramework.ResourceStatus status { get; set; }
     public FreeSmartphone.UsageResourcePolicy policy { get; set; }
     public ArrayList<string> users { get; set; }
+    public ArrayList<string> processDependencies { get; set; }
+    public ArrayList<string> busDependencies { get; set; }
 
     public FreeSmartphone.Resource proxy;
 
     // every resource has a command queue
     public LinkedList<unowned ResourceCommand> q;
 
-    public Resource( string name, DBus.BusName busname, DBus.ObjectPath? objectpath = null )
+    public Resource( string name, GLib.BusName busname, GLib.ObjectPath? objectpath = null )
     {
         this.users = new ArrayList<string>();
         this.q = new LinkedList<unowned ResourceCommand>();
@@ -75,13 +63,15 @@ public class Resource : IResource, Object
         this.name = name;
         this.busname = busname;
         this.objectpath = objectpath;
-        this.status = ResourceStatus.UNKNOWN;
+        this.status = FsoFramework.ResourceStatus.UNKNOWN;
         this.policy = FreeSmartphone.UsageResourcePolicy.AUTO;
+        this.busDependencies = new ArrayList<string>();
 
         if ( objectpath != null )
         {
-            proxy = dbusconn.get_object( busname, objectpath, RESOURCE_INTERFACE ) as FreeSmartphone.Resource;
+            proxy = Bus.get_proxy_sync<FreeSmartphone.Resource>( BusType.SYSTEM, busname, objectpath );
             assert( FsoFramework.theLogger.debug( @"Resource $name served by $busname ($objectpath) created" ) );
+            syncDependencies();
         }
         else
         {
@@ -92,6 +82,47 @@ public class Resource : IResource, Object
     ~Resource()
     {
         assert( FsoFramework.theLogger.debug( @"Resource $name served by $busname ($objectpath) destroyed" ) );
+    }
+
+    /**
+     * Sync dependencies of the resource with our local list.
+     **/
+    private async void syncDependencies()
+    {
+        try
+        {
+            var dependenciesFromResource = yield proxy.get_dependencies();
+
+            if ( dependenciesFromResource == null )
+            {
+                assert( FsoFramework.theLogger.debug(@"There are no dependencies for resource '$(name)'.") );
+                return;
+            }
+
+            var services = dependenciesFromResource.lookup( "services" );
+            if ( services != null )
+            {
+                var servicesStr = services as string;
+                if ( servicesStr != null )
+                {
+                    assert( FsoFramework.theLogger.debug( @"Resource '$name' has the following dependencies: $servicesStr" ) );
+
+                    var parts = servicesStr.split(",");
+                    foreach ( var service in parts )
+                    {
+                        busDependencies.add( service );
+                    }
+                }
+            }
+            else
+            {
+                assert( FsoFramework.theLogger.debug(@"Resource '$name' does not has any dependencies.") );
+            }
+        }
+        catch ( GLib.Error error )
+        {
+            FsoFramework.theLogger.error(@"Can't sync dependencies of resource '$(name)': $(error.message)" );
+        }
     }
 
     private void updateStatus()
@@ -105,19 +136,15 @@ public class Resource : IResource, Object
             FsoFramework.theLogger.warning( @"Resource $name already destroyed." );
             return;
         }
-        var info = new HashTable<string,Value?>( str_hash, str_equal );
-        var p = Value( typeof(int) );
-        p.set_int( policy );
-        info.insert( "policy", p );
-        var u = Value( typeof(int) );
-        u.set_int( users.size );
-        info.insert( "refcount", u );
+        var info = new HashTable<string,Variant>( str_hash, str_equal );
+        info.insert( "policy", policy );
+        info.insert( "refcount", users.size );
         instance.resource_changed( name, isEnabled(), info ); // DBUS SIGNAL
     }
 
     public bool isEnabled()
     {
-        return ( status == ResourceStatus.ENABLED );
+        return ( status == FsoFramework.ResourceStatus.ENABLED );
     }
 
     public bool hasUser( string user )
@@ -125,12 +152,14 @@ public class Resource : IResource, Object
         return ( user in users );
     }
 
-    public virtual async void setPolicy( FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void setPolicy( FreeSmartphone.UsageResourcePolicy policy ) throws FreeSmartphone.ResourceError, DBusError, IOError
     {
         if ( policy == this.policy )
             return;
         else
             ( this.policy = policy );
+
+        assert( FsoFramework.theLogger.debug( @"Policy for resource '$name' is now $policy" ) );
 
         /* does not work, bug in vala async */
 #if VALA_BUG_602200_FIXED
@@ -188,8 +217,16 @@ public class Resource : IResource, Object
 
         if ( policy == FreeSmartphone.UsageResourcePolicy.AUTO && users.size == 0 )
         {
-            yield enable();
+            try
+            {
+                yield enable();
+            }
+            catch ( GLib.Error error )
+            {
+                throw new FreeSmartphone.ResourceError.UNABLE_TO_ENABLE( @"Could not enable resource '$name': $(error.message)" );
+            }
         }
+
         users.insert( 0, user );
         updateStatus();
     }
@@ -207,7 +244,7 @@ public class Resource : IResource, Object
 
     public void syncUsers()
     {
-        dynamic DBus.Object busobj = dbusconn.get_object( DBus.DBUS_SERVICE_DBUS, DBus.DBUS_PATH_DBUS, DBus.DBUS_INTERFACE_DBUS );
+        DBusService.IDBusSync busobj = Bus.get_proxy_sync<DBusService.IDBusSync>( BusType.SYSTEM, DBusService.DBUS_SERVICE_DBUS, DBusService.DBUS_PATH_DBUS );
         string[] busnames = busobj.ListNames();
 
         var usersToRemove = new ArrayList<string>();
@@ -241,23 +278,23 @@ public class Resource : IResource, Object
 
     public bool isPresent()
     {
-        dynamic DBus.Object peer = dbusconn.get_object( busname, objectpath, DBus.DBUS_INTERFACE_PEER );
+        DBusService.IPeer peer = Bus.get_proxy_sync<DBusService.IPeer>( BusType.SYSTEM, busname, objectpath );
         try
         {
             peer.Ping();
             return true;
         }
-        catch ( DBus.Error e )
+        catch ( Error e )
         {
             instance.logger.warning( @"Resource $name incommunicado: $(e.message)" );
             return false;
         }
     }
 
-    public virtual async void enableShadowResource() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void enableShadowResource() throws FreeSmartphone.ResourceError, DBusError, IOError
     {
         assert( instance.logger.debug( @"Resource $name is shadow resource; pinging..." ) );
-        DBus.IPeer service = dbusconn.get_object( busname, "/", DBus.DBUS_INTERFACE_PEER ) as DBus.IPeer;
+        DBusService.IPeer service = Bus.get_proxy_sync<DBusService.IPeer>( BusType.SYSTEM, busname, "/" );
 #if DEBUG
         message( "PING" );
 #endif
@@ -269,24 +306,54 @@ public class Resource : IResource, Object
 #endif
     }
 
-    public virtual async void enable() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void enable() throws FreeSmartphone.ResourceError, DBusError, IOError
     {
         if ( objectpath == null )
         {
+#if DEBUG
             message( "enableShadowResource" );
+#endif
             yield enableShadowResource();
+#if DEBUG
             message( "shadowResourceEnabled" );
+#endif
+
+            // Wait until the resource has registered or registration has timed out
+            int retries = 0;
+            Timeout.add_seconds( 1, () => {
+                if ( retries > 10 )
+                {
+                    instance.logger.error( @"Can't enable resource '$name' as it has never registered!" );
+                    return false;
+                }
+
+                if ( proxy != null )
+                {
+                    assert( instance.logger.debug( @"DBus proxy for resource '$name' is now available." ) );
+                    enable.callback();
+                    return false;
+                }
+
+                retries++;
+                return true;
+            });
+            yield;
         }
 
-        assert( proxy != null );
+        // Ensure that we have a dbus connection for our resource
+        if ( proxy == null )
+        {
+            throw new FreeSmartphone.ResourceError.UNABLE_TO_ENABLE( @"Can't enable resource '$name'" );
+        }
 
         try
         {
             yield proxy.enable();
-            status = ResourceStatus.ENABLED;
+            assert( instance.logger.debug( @"Enabled resource $name successfully" ) );
+            status = FsoFramework.ResourceStatus.ENABLED;
             updateStatus();
         }
-        catch ( GLib.Error e )
+        catch ( Error e )
         {
             instance.logger.error( @"Resource $name can't be enabled: $(e.message). Trying to disable instead" );
             yield proxy.disable();
@@ -294,7 +361,7 @@ public class Resource : IResource, Object
         }
     }
 
-    public virtual async void disable() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void disable() throws FreeSmartphone.ResourceError, DBusError, IOError
     {
         // no need to disable a shadow resource
         if ( objectpath == null )
@@ -303,28 +370,30 @@ public class Resource : IResource, Object
         try
         {
             yield proxy.disable();
-            status = ResourceStatus.DISABLED;
+            assert( instance.logger.debug( @"Disabled resource $name successfully" ) );
+            status = FsoFramework.ResourceStatus.DISABLED;
             updateStatus();
         }
-        catch ( DBus.Error e )
+        catch ( Error e )
         {
             instance.logger.error( @"Resource $name can't be disabled: $(e.message). Setting status to UNKNOWN" );
-            status = ResourceStatus.UNKNOWN;
+            status = FsoFramework.ResourceStatus.UNKNOWN;
             throw e;
         }
     }
 
-    public virtual async void suspend() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void suspend() throws FreeSmartphone.ResourceError, DBusError, IOError
     {
-        if ( status == ResourceStatus.ENABLED )
+        if ( status == FsoFramework.ResourceStatus.ENABLED )
         {
             try
             {
                 yield proxy.suspend();
-                status = ResourceStatus.SUSPENDED;
+                assert( instance.logger.debug( @"Suspended resource $name successfully" ) );
+                status = FsoFramework.ResourceStatus.SUSPENDED;
                 updateStatus();
             }
-            catch ( DBus.Error e )
+            catch ( Error e )
             {
                 instance.logger.error( @"Resource $name can't be suspended: $(e.message). Trying to disable instead" );
                 yield proxy.disable();
@@ -337,17 +406,18 @@ public class Resource : IResource, Object
         }
     }
 
-    public virtual async void resume() throws FreeSmartphone.ResourceError, DBus.Error
+    public virtual async void resume() throws FreeSmartphone.ResourceError, DBusError, IOError
     {
-        if ( status == ResourceStatus.SUSPENDED )
+        if ( status == FsoFramework.ResourceStatus.SUSPENDED )
         {
             try
             {
                 yield proxy.resume();
-                status = ResourceStatus.ENABLED;
+                assert( instance.logger.debug( @"Resumed resource $name successfully" ) );
+                status = FsoFramework.ResourceStatus.ENABLED;
                 updateStatus();
             }
-            catch ( DBus.Error e )
+            catch ( Error e )
             {
                 instance.logger.error( @"Resource $name can't be resumed: $(e.message). Trying to disable instead" );
                 yield proxy.disable();
@@ -362,3 +432,5 @@ public class Resource : IResource, Object
 }
 
 } /* namespace Usage */
+
+// vim:ts=4:sw=4:expandtab
