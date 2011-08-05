@@ -7,7 +7,7 @@ AM_CFLAGS = \
 	$(GEE_CFLAGS) \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	-DG_LOG_DOMAIN=\"fsousage.lowlevel_kernel26\" \
+	-DG_LOG_DOMAIN=\"fsousage.lowlevel_android\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
@@ -39,15 +39,15 @@ endif
 # plugin
 #
 modlibexecdir = $(libdir)/cornucopia/modules/fsousage
-modlibexec_LTLIBRARIES = lowlevel_kernel26.la
-lowlevel_kernel26_la_SOURCES = plugin.c
-lowlevel_kernel26_la_VALASOURCES = plugin.vala
-$(lowlevel_kernel26_la_SOURCES): $(lowlevel_kernel26_la_VALASOURCES)
+modlibexec_LTLIBRARIES = lowlevel_android.la
+lowlevel_android_la_SOURCES = plugin.c
+lowlevel_android_la_VALASOURCES = plugin.vala
+$(lowlevel_android_la_SOURCES): $(lowlevel_android_la_VALASOURCES)
 	$(VALAC) -C $(VALAC_ARGS) $^
 	touch $@
-lowlevel_kernel26_la_LIBADD = $(progs_ldadd)
-lowlevel_kernel26_la_LDFLAGS = -no-undefined -module -avoid-version
-lowlevel_kernel26_la_LIBTOOLFLAGS = --tag=disable-static
+lowlevel_android_la_LIBADD = $(progs_ldadd)
+lowlevel_android_la_LDFLAGS = -no-undefined -module -avoid-version
+lowlevel_android_la_LIBTOOLFLAGS = --tag=disable-static
 
 CLEANFILES = \
     plugin.c \

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+/*
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,10 @@ public enum ResumeReason
     PhoneKey,
     Unknown,
     WiFi,
+    RingerSwitch,
+    Slider,
+    Keypad,
+    RTC,
 }
 
 public interface LowLevel : FsoFramework.AbstractObject
@@ -85,19 +89,22 @@ public class NullLowLevel : LowLevel, FsoFramework.AbstractObject
 {
     public override string repr()
     {
-        return "";
+        return "<>";
     }
 
     public void suspend()
     {
-        logger.warning( "NullLowlevel::suspend() - this is probably not what you want" );
+        logger.warning( "NullLowlevel::suspend() - this is probably not what you want. Sleeping 5 seconds..." );
+        Posix.sleep( 5 );
     }
 
     public ResumeReason resume()
     {
-        logger.warning( "NullLowlevel::resume() - this is probably not what you want" );
+        logger.warning( "NullLowlevel::resume() - this is probably not what you want. Resume reason will be unknown!" );
         return ResumeReason.Unknown;
     }
 }
 
 }
+
+// vim:ts=4:sw=4:expandtab
