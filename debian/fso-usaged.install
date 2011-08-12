@@ -1,6 +1,6 @@
 etc/dbus-1/system.d/fsousaged.conf
 usr/sbin/*
-usr/lib/libfsousage.so.0*
+usr/lib/cornucopia/libfsousage.so.0*
 usr/lib/cornucopia/modules/fsousage/dbus_service.so
 usr/lib/cornucopia/modules/fsousage/lowlevel_kernel26.so
 usr/lib/cornucopia/modules/fsousage/lowlevel_kernel26_staysalive.so

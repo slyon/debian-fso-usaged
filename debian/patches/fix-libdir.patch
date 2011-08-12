@@ -1,0 +1,11 @@
+--- a/src/lib/Makefile.am
++++ b/src/lib/Makefile.am
+@@ -2,6 +2,8 @@
+ 
+ NULL =
+ 
++libdir = $(prefix)/lib/cornucopia
++
+ AM_CPPFLAGS = \
+ 	-I$(top_srcdir)/src/lib \
+ 	$(FSO_CFLAGS) \
