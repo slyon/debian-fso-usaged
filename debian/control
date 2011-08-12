@@ -13,6 +13,7 @@ Vcs-Browser: http://git.debian.org/?p=pkg-fso/fso-usaged.git;a=summary
 Package: fso-usaged
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: fso-usaged-platform
 Description: freesmartphone.org usage daemon
  This daemon implements the freesmartphone.org Usage API
  .
@@ -33,6 +34,7 @@ Package: fso-usaged-openmoko
 Architecture: armel
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version})
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
+Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for Openmoko devices
  This daemon implements the freesmartphone.org Usage API
  .
@@ -43,6 +45,7 @@ Package: fso-usaged-htc
 Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version})
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
+Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for HTC devices
  This daemon implements the freesmartphone.org Usage API
  .
@@ -53,6 +56,7 @@ Package: fso-usaged-palmpre
 Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version}) 
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
+Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for Palm Pre devices
  This daemon implements the freesmartphone.org Usage API
  .
