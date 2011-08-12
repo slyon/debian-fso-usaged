@@ -30,7 +30,7 @@ Description: debugging symbols for use with freesmartphone.org usage daemon
  and is targeted for smartphones.
 
 Package: fso-usaged-openmoko
-Architecture: any
+Architecture: armel
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version})
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Description: freesmartphone.org usage daemon for Openmoko devices
@@ -40,7 +40,7 @@ Description: freesmartphone.org usage daemon for Openmoko devices
  and is targeted for smartphones.
 
 Package: fso-usaged-htc
-Architecture: any
+Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version})
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Description: freesmartphone.org usage daemon for HTC devices
@@ -50,7 +50,7 @@ Description: freesmartphone.org usage daemon for HTC devices
  and is targeted for smartphones.
 
 Package: fso-usaged-palmpre
-Architecture: any
+Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-usaged (= ${binary:Version}) 
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Description: freesmartphone.org usage daemon for Palm Pre devices
