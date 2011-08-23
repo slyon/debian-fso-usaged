@@ -1,5 +1,6 @@
 fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
 
+  [ Rico Rommel ]
   * New upstream snapshot
   * bump standards to 3.9.2
   * fixed lintian warnings
@@ -8,8 +9,10 @@ fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
   * fixed dependencies
   * add Rico Rommel <rico@bierrommel.de> to uploaders
 
- -- Rico Rommel <rico@bierrommel.de>  Fri, 05 Aug 2011 21:46:36 +0200
+  [ Sebastian Reichel ]
+  * add me to uploaders
 
+ -- Sebastian Reichel <sre@debian.org>  Tue, 23 Aug 2011 16:07:15 +0200
 
 fso-usaged (0.9.1.1+git20100507-1) unstable; urgency=low
 
