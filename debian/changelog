@@ -12,6 +12,7 @@ fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
   [ Sebastian Reichel ]
   * add me to uploaders
   * switch from cdbs to debhelper
+  * add watch file
 
  -- Sebastian Reichel <sre@debian.org>  Tue, 23 Aug 2011 16:07:15 +0200
 
