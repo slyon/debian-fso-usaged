@@ -37,7 +37,6 @@ Package: fso-usaged-dbg
 Architecture: any
 Section: debug
 Depends: ${misc:Depends},
-         ${shlibs:Depends},
          fso-usaged (= ${binary:Version}),
          fso-usaged-htc (= ${binary:Version}),
          fso-usaged-openmoko (= ${binary:Version}),
