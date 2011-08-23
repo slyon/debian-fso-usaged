@@ -1,4 +1,3 @@
 fix-libdir.patch
 fix-cleanfiles.patch
 fix-dbus_service-clean.patch
-restore-INSTALL.patch
