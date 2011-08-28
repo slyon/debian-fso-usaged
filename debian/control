@@ -63,6 +63,7 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          fso-usaged (= ${binary:Version})
+Multi-Arch: same
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for Openmoko devices
@@ -78,6 +79,7 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          fso-usaged (= ${binary:Version})
+Multi-Arch: same
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for HTC devices
@@ -96,7 +98,8 @@ Architecture: armel armhf
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         fso-usaged (= ${binary:Version}) 
+         fso-usaged (= ${binary:Version})
+Multi-Arch: same
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for Palm Pre devices
