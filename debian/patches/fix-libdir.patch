@@ -4,7 +4,7 @@
  
  NULL =
  
-+libdir = $(libdir)/cornucopia/libs/fsousage
++libdir += /cornucopia/libs/fsousage
 +
  AM_CPPFLAGS = \
  	-I$(top_srcdir)/src/lib \
