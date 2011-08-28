@@ -1,4 +1,5 @@
 etc/dbus-1/system.d/fsousaged.conf
+etc/freesmartphone/conf/default/*
 usr/sbin/*
 usr/lib/*/cornucopia/libs/fsousage/libfsousage.so.0*
 usr/lib/*/cornucopia/modules/fsousage/dbus_service.so
