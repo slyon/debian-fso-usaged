@@ -1,2 +1,2 @@
 etc/freesmartphone/conf/htc*/*
-usr/lib/cornucopia/modules/fsousage/lowlevel_android.so
+usr/lib/*/cornucopia/modules/fsousage/lowlevel_android.so

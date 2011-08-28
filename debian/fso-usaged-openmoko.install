@@ -1,2 +1,2 @@
 etc/freesmartphone/conf/openmoko_gta/*
-usr/lib/cornucopia/modules/fsousage/lowlevel_openmoko.so
+usr/lib/*/cornucopia/modules/fsousage/lowlevel_openmoko.so
