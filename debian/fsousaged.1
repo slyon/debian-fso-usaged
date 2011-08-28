@@ -1,0 +1,34 @@
+.TH FSOUSAGED 1 "AUGUST 28, 2011"
+.\" Please adjust this date whenever revising the manpage.
+.SH NAME
+fsousaged \- FSO usage daemon
+.SH SYNOPSIS
+.B fsousaged
+.SH DESCRIPTION
+fsousaged automatically controls system ressources like GSM, GPS, Bluetooth,
+WiFi, Display or CPU. It's intended to be used on smartphones and is part of
+the freesmartphone.org userland.
+
+If applications need to use any of these ressources they request it from
+fsousaged. Then the daemon will enable the ressource until the applications
+release the ressource. If multiple applications request the same ressource
+fsousaged ensures that the ressources stay enabled until all applications
+released the ressource.
+
+Depending on the configuration fsousaged may put the system into suspend
+if the CPU ressource is not requested.
+
+fsousaged loads its configuration from
+/etc/freesmartphone/conf/<platform>/fsousaged.conf (platform is detected
+via /proc/cpuinfo). If this file can't be found it will fallback to
+/etc/freesmartphone/conf/default/fsousaged.conf instead.
+
+The daemon will be started automatically by DBus, once a request is send
+to it, but can also be started manually.
+.SH OPTIONS
+fsousaged takes no parameters.
+.SH AUTHOR
+fsousaged was written by the FSO Team <smartphones-userland@linuxtogo.org>.
+.PP
+This manual page was written by Sebastian Reichel <sre@debian.org>,
+for the Debian project (but may be used by others).

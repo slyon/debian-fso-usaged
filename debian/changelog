@@ -17,6 +17,7 @@ fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
   * use multi-arch plugin directories
   * remove libdbus-1-dev and libdbus-glib-1-dev
     build-dependencies (upstream switched to glib's gdbus)
+  * add manpage for fsousaged
 
  -- Sebastian Reichel <sre@debian.org>  Sun, 28 Aug 2011 11:15:31 +0200
 
