@@ -5,18 +5,18 @@ fsousaged \- FSO usage daemon
 .SH SYNOPSIS
 .B fsousaged
 .SH DESCRIPTION
-fsousaged automatically controls system ressources like GSM, GPS, Bluetooth,
+fsousaged automatically controls system resources like GSM, GPS, Bluetooth,
 WiFi, Display or CPU. It's intended to be used on smartphones and is part of
 the freesmartphone.org userland.
 
-If applications need to use any of these ressources they request it from
-fsousaged. Then the daemon will enable the ressource until the applications
-release the ressource. If multiple applications request the same ressource
-fsousaged ensures that the ressources stay enabled until all applications
-released the ressource.
+If applications need to use any of these resources they request it from
+fsousaged. Then the daemon will enable the resource until the applications
+release the resource. If multiple applications request the same resource
+fsousaged ensures that the resources stay enabled until all applications
+released the resource.
 
 Depending on the configuration fsousaged may put the system into suspend
-if the CPU ressource is not requested.
+if the CPU resource is not requested.
 
 fsousaged loads its configuration from
 /etc/freesmartphone/conf/<platform>/fsousaged.conf (platform is detected
