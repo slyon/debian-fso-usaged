@@ -24,6 +24,7 @@ Vcs-Browser: http://git.debian.org/?p=pkg-fso/fso-usaged.git;a=summary
 
 Package: fso-usaged
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends}
 Recommends: fso-usaged-platform
@@ -36,6 +37,7 @@ Description: freesmartphone.org usage daemon
 Package: fso-usaged-dbg
 Architecture: any
 Section: debug
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          fso-usaged (= ${binary:Version}),
          fso-usaged-htc (= ${binary:Version}),
@@ -49,6 +51,7 @@ Description: debugging symbols for use with freesmartphone.org usage daemon
 
 Package: fso-usaged-openmoko
 Architecture: armel
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          fso-usaged (= ${binary:Version})
@@ -62,6 +65,7 @@ Description: freesmartphone.org usage daemon for Openmoko devices
 
 Package: fso-usaged-htc
 Architecture: armel armhf
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          fso-usaged (= ${binary:Version})
@@ -75,6 +79,7 @@ Description: freesmartphone.org usage daemon for HTC devices
 
 Package: fso-usaged-palmpre
 Architecture: armel armhf
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          fso-usaged (= ${binary:Version}) 
