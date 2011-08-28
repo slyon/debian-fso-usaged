@@ -27,7 +27,11 @@ Depends: ${misc:Depends},
          ${shlibs:Depends}
 Recommends: fso-usaged-platform
 Description: freesmartphone.org usage daemon
- This daemon implements the freesmartphone.org Usage API
+ fsousaged implements the freesmartphone.org Usage API. It automatically
+ controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
+ .
+ Some platforms (e.g. the Openmoko Freerunner) have custom lowlevel plugins,
+ which are available in optional packages.
  .
  This package is part of the freesmartphone.org software stack
  and is targeted for smartphones.
@@ -42,10 +46,16 @@ Depends: ${misc:Depends},
          fso-usaged-openmoko (= ${binary:Version}),
          fso-usaged-palmpre (= ${binary:Version})
 Description: debugging symbols for use with freesmartphone.org usage daemon
- This daemon implements the freesmartphone.org Usage API
+ fsousaged implements the freesmartphone.org Usage API. It automatically
+ controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
  .
- This package is part of the freesmartphone.org software stack
- and is targeted for smartphones.
+ Some platforms (e.g. the Openmoko Freerunner) have custom lowlevel plugins,
+ which are available in optional packages.
+ .
+ This package contains unstripped shared libraries. It is provided primarily
+ to provide a backtrace with names in a debugger, this makes it somewhat easier
+ to interpret core dumps. The libraries are installed in /usr/lib/debug and
+ are automatically used by gdb.
 
 Package: fso-usaged-openmoko
 Architecture: armel
@@ -56,10 +66,11 @@ Depends: ${misc:Depends},
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for Openmoko devices
- This daemon implements the freesmartphone.org Usage API
+ fsousaged implements the freesmartphone.org Usage API. It automatically
+ controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
  .
- This package is part of the freesmartphone.org software stack
- and is targeted for smartphones.
+ This package contains the configuration and lowlevel plugins for the Openmoko
+ Freerunner (also known as GTA02) and its predecessor GTA01.
 
 Package: fso-usaged-htc
 Architecture: armel armhf
@@ -70,10 +81,15 @@ Depends: ${misc:Depends},
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for HTC devices
- This daemon implements the freesmartphone.org Usage API
+ fsousaged implements the freesmartphone.org Usage API. It automatically
+ controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
  .
- This package is part of the freesmartphone.org software stack
- and is targeted for smartphones.
+ This package contains the configuration and lowlevel plugins for the following
+ HTC devices:
+ .
+ * Nexus One
+ * HTC Dream / G1
+ * HTC HD2 (Leo)
 
 Package: fso-usaged-palmpre
 Architecture: armel armhf
@@ -84,7 +100,8 @@ Depends: ${misc:Depends},
 Conflicts: fso-usaged (<< 0.9.5+git20110411)
 Provides: fso-usaged-platform
 Description: freesmartphone.org usage daemon for Palm Pre devices
- This daemon implements the freesmartphone.org Usage API
+ fsousaged implements the freesmartphone.org Usage API. It automatically
+ controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
  .
- This package is part of the freesmartphone.org software stack
- and is targeted for smartphones.
+ This package contains the configuration and lowlevel plugins for the Palm
+ Pre.
