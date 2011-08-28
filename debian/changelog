@@ -6,7 +6,7 @@ fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
   * fixed lintian warnings
   * fixed cleanfiles in src/lib/Makefile.am and .in
   * fixed cleanfiles in src/plugins/dbus_service/Makefile.am and .in
-  * fixed dependencies
+  * fixed dependencies (Closes: #629751)
   * add Rico Rommel <rico@bierrommel.de> to uploaders
 
   [ Sebastian Reichel ]
@@ -24,6 +24,7 @@ fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
 fso-usaged (0.9.1.1+git20100507-1) unstable; urgency=low
 
   * New upstream snapshot
+   - builds with binutils-gold (Closes: #554395)
 
  -- Heiko Stuebner <heiko@sntech.de>  Mon, 17 May 2010 18:54:30 +0200
 
