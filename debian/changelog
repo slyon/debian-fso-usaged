@@ -14,8 +14,9 @@ fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
   * switch from cdbs to debhelper
   * add watch file
   * update copyright and use DEP5 format
+  * use multi-arch plugin directories
 
- -- Sebastian Reichel <sre@debian.org>  Tue, 23 Aug 2011 16:07:15 +0200
+ -- Sebastian Reichel <sre@debian.org>  Sun, 28 Aug 2011 11:15:31 +0200
 
 fso-usaged (0.9.1.1+git20100507-1) unstable; urgency=low
 
