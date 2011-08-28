@@ -19,7 +19,7 @@ fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
     build-dependencies (upstream switched to glib's gdbus)
   * add manpage for fsousaged
 
- -- Sebastian Reichel <sre@debian.org>  Sun, 28 Aug 2011 11:15:31 +0200
+ -- Sebastian Reichel <sre@debian.org>  Sun, 28 Aug 2011 15:27:17 +0200
 
 fso-usaged (0.9.1.1+git20100507-1) unstable; urgency=low
 
