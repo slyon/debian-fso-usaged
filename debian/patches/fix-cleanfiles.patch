@@ -1,3 +1,6 @@
+Description: Fix cleanup rule in Makefile
+ also remove Makefile.in and fsousage.h
+Author: Rico Rommel <rico@bierrommel.de>
 --- a/src/lib/Makefile.am
 +++ b/src/lib/Makefile.am
 @@ -61,10 +61,12 @@

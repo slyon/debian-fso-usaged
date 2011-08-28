@@ -1,3 +1,6 @@
+Description: Fix cleanup rule in dbus_service Makefile
+ also remove generated sources
+Author: Rico Rommel <rico@bierrommel.de>
 --- a/src/plugins/dbus_service/Makefile.am
 +++ b/src/plugins/dbus_service/Makefile.am
 @@ -55,6 +55,7 @@
