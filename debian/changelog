@@ -1,3 +1,10 @@
+fso-usaged (0.9.5+git20110805-2) unstable; urgency=low
+
+  * fix dependencies of fso-usaged-dbg for non armel
+    architectures
+
+ -- Sebastian Reichel <sre@debian.org>  Tue, 30 Aug 2011 02:44:15 +0200
+
 fso-usaged (0.9.5+git20110805-1) unstable; urgency=low
 
   [ Rico Rommel ]

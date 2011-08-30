@@ -42,9 +42,9 @@ Section: debug
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          fso-usaged (= ${binary:Version}),
-         fso-usaged-htc (= ${binary:Version}),
-         fso-usaged-openmoko (= ${binary:Version}),
-         fso-usaged-palmpre (= ${binary:Version})
+         fso-usaged-htc (= ${binary:Version}) [armel armhf],
+         fso-usaged-openmoko (= ${binary:Version}) [armel],
+         fso-usaged-palmpre (= ${binary:Version}) [armel armhf]
 Description: debugging symbols for use with freesmartphone.org usage daemon
  fsousaged implements the freesmartphone.org Usage API. It automatically
  controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
