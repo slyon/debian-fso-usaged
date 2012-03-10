@@ -229,7 +229,8 @@ public class Shutdown : SystemCommand
         instance.updateSystemStatus( FreeSmartphone.UsageSystemAction.SHUTDOWN );
         yield instance.disableAllResources();
         Idle.add( () => {
-            Posix.system( "shutdown -h now" );
+            var cmd = FsoFramework.theConfig.stringValue( "fsousage", "shutdown_command", "/sbin/shutdown -h now" );
+            Posix.system( cmd );
             return false;
         } );
     }
@@ -246,7 +247,8 @@ public class Reboot : SystemCommand
         instance.updateSystemStatus( FreeSmartphone.UsageSystemAction.REBOOT );
         yield instance.disableAllResources();
         Idle.add( () => {
-            Posix.system( "reboot now" );
+            var cmd = FsoFramework.theConfig.stringValue( "fsousage", "reboot_command", "/sbin/shutdown -r now" );
+            Posix.system( cmd );
             return false;
         } );
     }
@@ -261,7 +263,7 @@ public class Resume : SystemCommand
     {
         yield enqueue();
         instance.updateSystemStatus( FreeSmartphone.UsageSystemAction.RESUME );
-        yield instance.resumeAllResources();
+        Idle.add( instance.onIdleForResume );
     }
 }
 
