@@ -10,7 +10,7 @@ AC_GNU_SOURCE
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
-VALA_REQUIRED=0.12.0
+VALA_REQUIRED=0.14.2
 AC_PATH_PROG(VALAC, valac, valac)
 AC_SUBST(VALAC)
 m4_ifdef([AM_PROG_VALAC], [AM_PROG_VALAC([$VALA_REQUIRED])])
@@ -21,7 +21,7 @@ AC_SUBST(LDFLAGS)
 
 GLIB_REQUIRED=2.26.0
 GEE_REQUIRED=0.5.0
-FSO_GLIB_REQUIRED=2010.05.11.2
+FSO_GLIB_REQUIRED=2012.02.14.1
 FSO_FRAMEWORK_REQUIRED=0.2.3
 
 # glib and friends
@@ -87,6 +87,7 @@ AC_CONFIG_FILES([
   conf/openmoko_gta/Makefile
   conf/nexusone/Makefile
   conf/palm_pre/Makefile
+  conf/herring/Makefile
   data/org.freesmartphone.ousaged.service
   data/Makefile
   src/Makefile
