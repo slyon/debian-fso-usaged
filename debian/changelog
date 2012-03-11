@@ -1,3 +1,10 @@
+fso-usaged (0.9.5+git20120214-1) unstable; urgency=low
+
+  * New upstream snapshot
+  * depends on vala-0.14 (Closes #663306)
+
+ -- Rico Rommel <rico@bierrommel.de>  Sat, 10 Mar 2012 14:21:29 +0100
+
 fso-usaged (0.9.5+git20110805-2) unstable; urgency=low
 
   * fix dependencies of fso-usaged-dbg for non armel
