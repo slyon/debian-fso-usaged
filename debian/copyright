@@ -1,16 +1,16 @@
-Format: http://anonscm.debian.org/viewvc/dep/web/deps/dep5.mdwn?revision=174
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Source: http://www.freesmartphone.org
 
 Files: *
-Copyright: 2009-2011, Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+Copyright: 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
 License: LGPL-2.1+
 
 Files: src/plugins/lowlevel_palmpre/plugin.vala
-Copyright: 2010-2011, Simon Busch <morphis@gravedo.de>
+Copyright: 2010-2011 Simon Busch <morphis@gravedo.de>
 License: LGPL-2.1+
 
 Files: debian/*
-Copyright: 2009-2011, Heiko Stuebner <heiko@sntech.de>
+Copyright: 2009-2011 Heiko Stuebner <heiko@sntech.de>
 License: GPL-2+
 
 License: GPL-2+
