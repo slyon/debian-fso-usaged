@@ -1,3 +1,9 @@
+fso-usaged (0.9.5+git20120214-2) unstable; urgency=low
+
+  * Bump libfso-glib-dev build dependency to 2012.02.14.1 (Closes: #664170)
+
+ -- Sebastian Reichel <sre@debian.org>  Fri, 16 Mar 2012 15:56:37 +0100
+
 fso-usaged (0.9.5+git20120214-1) unstable; urgency=low
 
   * New upstream snapshot
