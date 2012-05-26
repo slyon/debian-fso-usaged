@@ -1,2 +1,2 @@
 version=3
-http://downloads.freesmartphone.org/ fsousaged-([0-9\.]+)\.tar\.bz2
+http://downloads.freesmartphone.org/sources/cornucopia/([0-9\.]+)/fsousaged-([0-9\.]+)\.tar\.bz2
