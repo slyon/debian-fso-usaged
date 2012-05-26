@@ -2,9 +2,11 @@ Source: fso-usaged
 Section: misc
 Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
-Uploaders: Heiko Stuebner <heiko@sntech.de>, Rico Rommel <rico@bierrommel.de>, Sebastian Reichel <sre@debian.org>
+Uploaders: Heiko Stuebner <heiko@sntech.de>,
+           Rico Rommel <rico@bierrommel.de>,
+           Sebastian Reichel <sre@debian.org>
 DM-Upload-Allowed: yes
-Build-Depends: debhelper (>= 8.1.3),
+Build-Depends: debhelper (>= 9),
                dh-autoreconf,
                libfso-glib-dev (>= 2012.02.14.1),
                libfsobasics-dev (>= 0.9.99+git20110804),
