@@ -1,2 +1,2 @@
-use-private-libdir.patch
-fix-dbus_service-clean.patch
+#use-private-libdir.patch
+#fix-dbus_service-clean.patch
