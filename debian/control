@@ -41,7 +41,6 @@ Description: freesmartphone.org usage daemon
 Package: fso-usaged-dbg
 Architecture: any
 Section: debug
-Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          fso-usaged (= ${binary:Version}),
          fso-usaged-htc (= ${binary:Version}) [armel armhf],
