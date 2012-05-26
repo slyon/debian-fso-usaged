@@ -1,8 +1,10 @@
 fso-usaged (0.11.0-1) unstable; urgency=low
 
   * New upstream release
+  * enable vala compilation
+  * enable --as-needed
 
- -- Sebastian Reichel <sre@debian.org>  Sat, 26 May 2012 10:37:42 +0200
+ -- Sebastian Reichel <sre@debian.org>  Sat, 26 May 2012 11:43:26 +0200
 
 fso-usaged (0.9.5+git20120214-2) unstable; urgency=low
 
