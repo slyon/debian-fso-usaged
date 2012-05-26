@@ -1,3 +1,2 @@
 use-private-libdir.patch
-fix-cleanfiles.patch
 fix-dbus_service-clean.patch
