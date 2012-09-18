@@ -1,3 +1,10 @@
+fso-usaged (0.12.0~rc2-1) unstable; urgency=low
+
+  * New upstream release
+  * Remove palmpre package. It isn't supported upstream anymore.
+
+ -- Lukas Märdian <luk@slyon.de>  Tue, 18 Sep 2012 15:09:04 +0200
+
 fso-usaged (0.11.0-1) unstable; urgency=low
 
   * New upstream release

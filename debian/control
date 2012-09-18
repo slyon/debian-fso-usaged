@@ -8,15 +8,14 @@ Uploaders: Heiko Stuebner <heiko@sntech.de>,
 DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,
-               libfso-glib-dev (>= 2012.05.24.1),
-               libfsobasics-dev (>= 0.11.0),
-               libfsoframework-dev (>= 0.11.0),
+               libfso-glib-dev (>= 2012.07.27.2),
+               libfsoframework-dev (>= 0.12.0~rc2),
                libgee-dev (>= 0.5.0),
                libglib2.0-dev (>= 2.26.0),
-               libvala-0.14-dev,
+               libvala-0.16-dev,
                pkg-config,
                quilt,
-               valac-0.14
+               valac-0.16
 Standards-Version: 3.9.3
 Homepage: http://freesmartphone.org/
 Vcs-Git: git://git.debian.org/git/pkg-fso/fso-usaged.git
@@ -45,7 +44,6 @@ Depends: ${misc:Depends},
          fso-usaged (= ${binary:Version}),
          fso-usaged-htc (= ${binary:Version}) [armel armhf],
          fso-usaged-openmoko (= ${binary:Version}) [armel],
-         fso-usaged-palmpre (= ${binary:Version}) [armel armhf]
 Description: debugging symbols for use with freesmartphone.org usage daemon
  fsousaged implements the freesmartphone.org Usage API. It automatically
  controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
@@ -93,19 +91,3 @@ Description: freesmartphone.org usage daemon for HTC devices
  * Nexus One
  * HTC Dream / G1
  * HTC HD2 (Leo)
-
-Package: fso-usaged-palmpre
-Architecture: armel armhf
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends},
-         ${shlibs:Depends},
-         fso-usaged (= ${binary:Version})
-Multi-Arch: same
-Breaks: fso-usaged (<< 0.9.5+git20110411)
-Provides: fso-usaged-platform
-Description: freesmartphone.org usage daemon for Palm Pre devices
- fsousaged implements the freesmartphone.org Usage API. It automatically
- controls system resources like GSM, GPS, Bluetooth, WiFi, Display or CPU.
- .
- This package contains the configuration and lowlevel plugins for the Palm
- Pre.
