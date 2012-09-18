@@ -37,11 +37,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/Makefile.decl lowlevel_palmpre_la_vala.stamp \
-	plugin.c
-@WANT_DEBUG_TRUE@am__append_1 = -g -D DEBUG
+	$(top_srcdir)/Makefile.decl integration_tests_vala.stamp \
+	main.c
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
 @WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
-subdir = src/plugins/lowlevel_palmpre
+noinst_PROGRAMS = integration_tests$(EXEEXT)
+subdir = tests/integration
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -50,49 +51,18 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  test -z "$$files" \
-    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-         $(am__cd) "$$dir" && rm -f $$files; }; \
-  }
-am__installdirs = "$(DESTDIR)$(modlibexecdir)"
-LTLIBRARIES = $(modlibexec_LTLIBRARIES)
+PROGRAMS = $(noinst_PROGRAMS)
+am__objects_1 =
+am_integration_tests_OBJECTS = main.$(OBJEXT) $(am__objects_1)
+integration_tests_OBJECTS = $(am_integration_tests_OBJECTS)
+integration_tests_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-lowlevel_palmpre_la_DEPENDENCIES =  \
-	$(top_builddir)/src/lib/libfsousage.la $(am__DEPENDENCIES_1) \
+integration_tests_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-am_lowlevel_palmpre_la_OBJECTS = lowlevel_palmpre_la-plugin.lo
-lowlevel_palmpre_la_OBJECTS = $(am_lowlevel_palmpre_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-lowlevel_palmpre_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(lowlevel_palmpre_la_CFLAGS) $(CFLAGS) \
-	$(lowlevel_palmpre_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -126,8 +96,8 @@ am__v_VALAC_0 = @echo "  VALAC " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(lowlevel_palmpre_la_SOURCES)
-DIST_SOURCES = $(lowlevel_palmpre_la_SOURCES)
+SOURCES = $(integration_tests_SOURCES)
+DIST_SOURCES = $(integration_tests_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -264,40 +234,42 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
-AM_CFLAGS = -DG_LOG_DOMAIN=\"fsousage.lowlevel_palmpre\" $(NULL) \
-	$(am__append_2)
-AM_VALAFLAGS = $(am__append_1)
-modlibexecdir = $(libdir)/cornucopia/modules/fsousage
-modlibexec_LTLIBRARIES = lowlevel_palmpre.la
-lowlevel_palmpre_la_SOURCES = plugin.vala
-lowlevel_palmpre_la_VALAFLAGS = \
+AM_CFLAGS = \
+	$(GLIB_CFLAGS) \
+	$(GEE_CFLAGS) \
+	$(FSO_CFLAGS) \
+	-g -DDEBUG \
+	$(NULL)
+
+LDADD = \
+	$(GLIB_LIBS) \
+	$(GEE_LIBS) \
+	$(FSO_LIBS) \
+	$(NULL)
+
+AM_VALAFLAGS = \
 	--basedir $(top_srcdir) \
-	--vapidir $(top_srcdir)/src/lib \
+	--pkg posix \
 	--pkg glib-2.0 \
 	--pkg gio-2.0 \
 	--pkg gee-1.0 \
+	--pkg fsotest-2.0 \
+	--pkg fsobasics-2.0 \
 	--pkg fsoframework-2.0 \
+	--pkg fsoresource-2.0 \
 	--pkg fso-glib-1.0 \
-	--pkg fsousage-2.0 \
+	-g \
 	$(NULL)
 
-lowlevel_palmpre_la_CFLAGS = \
-	-I$(top_srcdir)/src/lib \
-	$(GEE_CFLAGS) \
-	$(FSO_CFLAGS) \
-	$(GLIB_CFLAGS) \
+integration_tests_SOURCES = \
+	main.vala \
 	$(NULL)
 
-lowlevel_palmpre_la_LIBADD = \
-	$(top_builddir)/src/lib/libfsousage.la \
-	$(GEE_LIBS) \
-	$(FSO_LIBS) \
-	$(GLIB_LIBS) \
-	$(NULL)
-
-lowlevel_palmpre_la_LDFLAGS = -no-undefined -module -avoid-version
-# lowlevel_palmpre_la_LIBTOOLFLAGS = --tag=disable-static
 CLEANFILES = 
 MAINTAINERCLEANFILES = \
 	Makefile.in \
@@ -316,9 +288,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/plugins/lowlevel_palmpre/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/integration/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/plugins/lowlevel_palmpre/Makefile
+	  $(AUTOMAKE) --gnu tests/integration/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -338,39 +310,18 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-install-modlibexecLTLIBRARIES: $(modlibexec_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(modlibexecdir)" || $(MKDIR_P) "$(DESTDIR)$(modlibexecdir)"
-	@list='$(modlibexec_LTLIBRARIES)'; test -n "$(modlibexecdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(modlibexecdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(modlibexecdir)"; \
-	}
 
-uninstall-modlibexecLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(modlibexec_LTLIBRARIES)'; test -n "$(modlibexecdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(modlibexecdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(modlibexecdir)/$$f"; \
-	done
-
-clean-modlibexecLTLIBRARIES:
-	-test -z "$(modlibexec_LTLIBRARIES)" || rm -f $(modlibexec_LTLIBRARIES)
-	@list='$(modlibexec_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
-lowlevel_palmpre.la: $(lowlevel_palmpre_la_OBJECTS) $(lowlevel_palmpre_la_DEPENDENCIES) $(EXTRA_lowlevel_palmpre_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(lowlevel_palmpre_la_LINK) -rpath $(modlibexecdir) $(lowlevel_palmpre_la_OBJECTS) $(lowlevel_palmpre_la_LIBADD) $(LIBS)
+clean-noinstPROGRAMS:
+	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
+integration_tests$(EXEEXT): $(integration_tests_OBJECTS) $(integration_tests_DEPENDENCIES) $(EXTRA_integration_tests_DEPENDENCIES) 
+	@rm -f integration_tests$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(integration_tests_OBJECTS) $(integration_tests_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -378,7 +329,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lowlevel_palmpre_la-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -400,21 +351,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-lowlevel_palmpre_la-plugin.lo: plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lowlevel_palmpre_la_CFLAGS) $(CFLAGS) -MT lowlevel_palmpre_la-plugin.lo -MD -MP -MF $(DEPDIR)/lowlevel_palmpre_la-plugin.Tpo -c -o lowlevel_palmpre_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lowlevel_palmpre_la-plugin.Tpo $(DEPDIR)/lowlevel_palmpre_la-plugin.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin.c' object='lowlevel_palmpre_la-plugin.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lowlevel_palmpre_la_CFLAGS) $(CFLAGS) -c -o lowlevel_palmpre_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
-$(srcdir)/plugin.c: $(srcdir)/lowlevel_palmpre_la_vala.stamp
-	@if test -f $@; then :; else rm -f $(srcdir)/lowlevel_palmpre_la_vala.stamp; fi
+$(srcdir)/main.c: $(srcdir)/integration_tests_vala.stamp
+	@if test -f $@; then :; else rm -f $(srcdir)/integration_tests_vala.stamp; fi
 	@if test -f $@; then :; else \
-	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/lowlevel_palmpre_la_vala.stamp; \
+	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/integration_tests_vala.stamp; \
 	fi
-$(srcdir)/lowlevel_palmpre_la_vala.stamp: $(lowlevel_palmpre_la_SOURCES)
+$(srcdir)/integration_tests_vala.stamp: $(integration_tests_SOURCES)
 	$(AM_V_at)rm -f $@ && echo stamp > $@-t
-	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(lowlevel_palmpre_la_VALAFLAGS) $(VALAFLAGS) -C $(lowlevel_palmpre_la_SOURCES)
+	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(AM_VALAFLAGS) $(VALAFLAGS) -C $(integration_tests_SOURCES)
 	$(AM_V_at)mv -f $@-t $@
 
 mostlyclean-libtool:
@@ -508,11 +452,8 @@ distdir: $(DISTFILES)
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(PROGRAMS)
 installdirs:
-	for dir in "$(DESTDIR)$(modlibexecdir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -544,12 +485,12 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-rm -f lowlevel_palmpre_la_vala.stamp
-	-rm -f plugin.c
+	-rm -f integration_tests_vala.stamp
+	-rm -f main.c
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-modlibexecLTLIBRARIES \
+clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -576,7 +517,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-modlibexecLTLIBRARIES
+install-exec-am:
 
 install-html: install-html-am
 
@@ -616,24 +557,23 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-modlibexecLTLIBRARIES
+uninstall-am:
 
 .MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am check-local clean \
-	clean-generic clean-libtool clean-modlibexecLTLIBRARIES ctags \
+	clean-generic clean-libtool clean-noinstPROGRAMS ctags \
 	distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-modlibexecLTLIBRARIES \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-modlibexecLTLIBRARIES
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am
 
 
 ### testing rules

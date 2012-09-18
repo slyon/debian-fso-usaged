@@ -1,7 +1,7 @@
 /*
  * FSO Resource Controller DBus Service
  *
- * (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * (C) 2009-2012 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *               Simon Busch <morphis@gravedo.de>
  *
  * This library is free software; you can redistribute it and/or
@@ -152,9 +152,6 @@ public class Controller : FsoFramework.AbstractObject
                 break;
             case "openmoko":
                 typename = "LowLevelOpenmoko";
-                break;
-            case "palmpre":
-                typename = "LowLevelPalmPre";
                 break;
             default:
                 logger.warning( @"Invalid lowlevel_type $lowleveltype; suspend/resume will NOT be available!" );

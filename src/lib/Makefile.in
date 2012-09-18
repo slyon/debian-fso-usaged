@@ -39,6 +39,8 @@ host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl fsousage.h \
 	libfsousage_la_vala.stamp lowlevel.c
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 subdir = src/lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -260,6 +262,10 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
 AM_CFLAGS = \
 	-DG_LOG_DOMAIN=\"fsousage.lib\" \
@@ -278,12 +284,14 @@ libfsousage_la_VALAFLAGS = \
 	--pkg fsoframework-2.0 \
 	--header fsousage.h \
 	--library fsousage-2.0 \
+	$(DEBUG_VALAFLAGS) \
 	$(NULL)
 
 libfsousage_la_CFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(DEBUG_CFLAGS) \
 	$(NULL)
 
 libfsousage_la_LIBADD = \

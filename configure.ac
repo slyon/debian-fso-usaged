@@ -1,5 +1,5 @@
 m4_define([fsousaged_released], [1])
-m4_define([fsousaged_base_version], [0.11.0])
+m4_define([fsousaged_base_version], [0.12.0-rc2])
 m4_define([fsousaged_maybe_gitrev], m4_if(fsousaged_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsousaged_version], m4_if(fsousaged_released, [1], [fsousaged_base_version], [fsousaged_base_version-fsousaged_maybe_gitrev]))
 
@@ -27,7 +27,7 @@ AC_SUBST(LDFLAGS)
 # Vala building options -- allows tarball builds without installing vala
 #########################################################################################
 
-VALA_REQUIRED=0.14.2
+VALA_REQUIRED=0.16.0
 
 AC_ARG_ENABLE([vala], AS_HELP_STRING([--enable-vala],[Enable building from Vala sources]),
               [enable_vala=$enableval], [enable_vala=no])
@@ -54,7 +54,7 @@ AM_CONDITIONAL([HAVE_VALA], [test "x$enable_vala" = "xyes"])
 
 GLIB_REQUIRED=2.26.0
 GEE_REQUIRED=0.5.0
-FSO_GLIB_REQUIRED=2012.05.24.1
+FSO_GLIB_REQUIRED=2012.07.27.1
 FSO_REQUIRED=0.11.0
 
 PKG_CHECK_MODULES(GLIB,
@@ -71,7 +71,8 @@ AC_SUBST(GEE_LIBS)
 
 PKG_CHECK_MODULES(FSO,
   fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED)
+  fsoframework-2.0 >= $FSO_REQUIRED
+  fsotest-2.0 >= $FSO_REQUIRED)
 AC_SUBST(FSO_CFLAGS)
 AC_SUBST(FSO_LIBS)
 
@@ -148,7 +149,6 @@ AC_CONFIG_FILES([
   conf/htcleo/Makefile
   conf/openmoko_gta/Makefile
   conf/nexusone/Makefile
-  conf/palm_pre/Makefile
   conf/herring/Makefile
   data/org.freesmartphone.ousaged.service
   data/Makefile
@@ -162,8 +162,8 @@ AC_CONFIG_FILES([
   src/plugins/lowlevel_kernel26/Makefile
   src/plugins/lowlevel_kernel26_staysalive/Makefile
   src/plugins/lowlevel_openmoko/Makefile
-  src/plugins/lowlevel_palmpre/Makefile
   tests/Makefile
+  tests/integration/Makefile
 ])
 AC_OUTPUT
 
