@@ -1,7 +1,7 @@
 /*
  * FSO Resource Abstraction
  *
- * (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * (C) 2009-2012 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -72,6 +72,7 @@ public class Resource : IResource, Object
             proxy = Bus.get_proxy_sync<FreeSmartphone.Resource>( BusType.SYSTEM, busname, objectpath );
             assert( FsoFramework.theLogger.debug( @"Resource $name served by $busname ($objectpath) created" ) );
             syncDependencies();
+            syncPolicy();
         }
         else
         {
@@ -122,6 +123,19 @@ public class Resource : IResource, Object
         catch ( GLib.Error error )
         {
             FsoFramework.theLogger.error(@"Can't sync dependencies of resource '$(name)': $(error.message)" );
+        }
+    }
+
+    private async void syncPolicy()
+    {
+        try
+        {
+            var p = yield proxy.get_default_policy();
+            this.policy = p;
+        }
+        catch ( GLib.Error error )
+        {
+            FsoFramework.theLogger.error( @"Can't sync default policy of resource '$name': $(error.message)" );
         }
     }
 

@@ -38,6 +38,8 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl fsousaged_vala.stamp main.c
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 sbin_PROGRAMS = fsousaged$(EXEEXT)
 subdir = src/bin
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -232,6 +234,10 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
 AM_CFLAGS = \
 	-include $(CONFIG_HEADER) \
@@ -248,11 +254,13 @@ fsousaged_VALAFLAGS = \
 	--pkg fsoframework-2.0 \
 	--save-temps \
 	--basedir $(top_srcdir) \
+	$(DEBUG_VALAFLAGS) \
 	$(NULL)
 
 fsousaged_CFLAGS = \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(DEBUG_CFLAGS) \
 	$(NULL)
 
 fsousaged_LDADD = \

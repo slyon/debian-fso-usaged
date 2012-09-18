@@ -40,6 +40,8 @@ DIST_COMMON = $(dist_dbusconf_DATA) $(dist_dbusservice_DATA) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/org.freesmartphone.ousaged.service.in \
 	$(top_srcdir)/Makefile.decl
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 subdir = data
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -221,6 +223,10 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 dbusconfdir = @DBUS_DIR@/system.d
 dist_dbusconf_DATA = fsousaged.conf
 dbusservicedir = @DBUS_SYSTEM_SERVICE_DIR@/../system-services

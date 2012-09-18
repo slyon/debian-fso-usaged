@@ -40,7 +40,9 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/Makefile.decl $(top_srcdir)/configure AUTHORS \
 	COPYING ChangeLog INSTALL NEWS compile config.guess config.sub \
 	depcomp install-sh ltmain.sh missing
-@WANT_DATAFILES_TRUE@am__append_1 = \
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
+@WANT_DATAFILES_TRUE@am__append_3 = \
 @WANT_DATAFILES_TRUE@	conf \
 @WANT_DATAFILES_TRUE@	data \
 @WANT_DATAFILES_TRUE@	$(NULL)
@@ -252,8 +254,12 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
-SUBDIRS = src tests vapi $(NULL) $(am__append_1)
+SUBDIRS = src tests vapi $(NULL) $(am__append_3)
 DISTCHECK_CONFIGURE_FLAGS = \
 	--disable-datafiles \
 	$(NULL)

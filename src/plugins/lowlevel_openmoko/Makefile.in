@@ -39,7 +39,7 @@ host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl lowlevel_openmoko_la_vala.stamp \
 	plugin.c
-@WANT_DEBUG_TRUE@am__append_1 = -g -D DEBUG
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
 @WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 subdir = src/plugins/lowlevel_openmoko
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -264,10 +264,16 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
-AM_CFLAGS = -DG_LOG_DOMAIN=\"fsousage.lowlevel_openmoko\" $(NULL) \
-	$(am__append_2)
-AM_VALAFLAGS = $(am__append_1)
+AM_CFLAGS = \
+	-DG_LOG_DOMAIN=\"fsousage.lowlevel_openmoko\" \
+	$(NULL)
+
+AM_VALAFLAGS = 
 modlibexecdir = $(libdir)/cornucopia/modules/fsousage
 modlibexec_LTLIBRARIES = lowlevel_openmoko.la
 lowlevel_openmoko_la_SOURCES = plugin.vala
@@ -280,6 +286,7 @@ lowlevel_openmoko_la_VALAFLAGS = \
 	--pkg fsoframework-2.0 \
 	--pkg fso-glib-1.0 \
 	--pkg fsousage-2.0 \
+	$(DEBUG_VALAFLAGS) \
 	$(NULL)
 
 lowlevel_openmoko_la_CFLAGS = \
@@ -287,6 +294,7 @@ lowlevel_openmoko_la_CFLAGS = \
 	$(GEE_CFLAGS) \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(DEBUG_CFLAGS) \
 	$(NULL)
 
 lowlevel_openmoko_la_LIBADD = \
