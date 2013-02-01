@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.freesmartphone.ousaged
-Exec=/usr/local/sbin/fsousaged
+Exec=/home/morphis/Workspace/fso-new/buildroot/install/sbin/fsousaged
 User=root
